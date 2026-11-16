@@ -1,0 +1,24 @@
+{
+  "name": "cuotas-club",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema de gestión de cuotas para Osorno Runners",
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c red,blue \"npm run dev -w api\" \"npm run dev -w web\"",
+    "build": "npm run build -w shared && npm run build -w api && npm run build -w web",
+    "typecheck": "npm run typecheck -w shared && npm run typecheck -w api && npm run typecheck -w web",
+    "test": "npm run test -w api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -29,6 +29,9 @@ pnpm-debug.log*
 # Cobertura de pruebas
 coverage/
 
+# Artefactos de compilación de TypeScript
+*.tsbuildinfo
+
 # Base de datos local suelta
 *.sqlite
 *.sqlite3
