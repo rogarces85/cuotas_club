@@ -2,10 +2,12 @@
 title: Spec — Administración de socios (M1)
 type: sdd-spec
 slug: socios-m1
-status: approved
+status: implemented
 branch: main
 created: 2026-11-16
 approved: 2026-11-16
+implemented: 2026-11-16
+commit: f629624
 ---
 
 # Spec — Administración de socios (M1)

@@ -1,7 +1,7 @@
 ---
 author: Rodrigo Garces
 branch: main
-status: in-progress
+status: done
 ---
 # M1 — Socios (CRUD, búsqueda, categorías)
 
