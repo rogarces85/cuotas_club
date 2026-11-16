@@ -64,6 +64,31 @@ club (rojo/negro/blanco) aplicado. Es el cimiento de M1 a M5: sin esto, ningún 
 - Timestamp → datetime en tablas de auth (ERROR 1067 en MariaDB 10.4).
 - Migrator propio `npm run db:migrate` en vez de `drizzle-kit migrate` (reporte de error roto).
 
+## Prueba de aceptación (2026-11-16)
+
+Ejecutada con el sistema levantado: API en `:8787`, web en `:5173`.
+
+| Verificación | Resultado |
+|---|---|
+| `npm run typecheck` (3 workspaces) | 0 errores |
+| `npm run build` | OK — CSS 13,19 kB · JS 230,29 kB (gzip 71,41 kB) |
+| `GET /api/health` (directo) | 200, `database: "up"` |
+| `GET /api/health` (por proxy Vite) | 200, `database: "up"` |
+| `GET /` (frontend) | 200, título presente |
+| `POST /api/auth/sign-up/email` | 200, usuario creado |
+| `POST /api/auth/sign-in/email` | 200, token emitido |
+| `GET /api/auth/get-session` (con cookie) | 200, sesión del usuario |
+| `POST /api/auth/sign-in/email` con clave errónea | **401**, rechazado |
+| Clave en BD | hash de 161 caracteres (`salt:hash`), nunca texto plano |
+| Modelo de rol (`usuario_rol`) | usuario con rol `TESORERO` asignado y consultado por JOIN |
+| Render del shell | sidebar negra, botón rojo, KPIs, navegación completa |
+
+**Lo que todavía no se puede probar desde el navegador:** no existe pantalla de login. La
+autenticación funciona por API (probada arriba), pero la interfaz es solo el shell. Ese es el
+siguiente paso antes de M1.
+
+Usuario de prueba creado: `tesorero@osornorunners.cl`, rol `TESORERO`.
+
 ## Next
 
 M1 — CRUD de socios con datos de prueba. Ver `02-DOCS/wiki/product/plan-de-trabajo.md` (§5, M1).
