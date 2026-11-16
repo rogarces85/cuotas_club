@@ -1,0 +1,50 @@
+# Dependencias
+node_modules/
+.pnp/
+.pnp.js
+
+# Builds
+dist/
+build/
+.vite/
+.next/
+out/
+
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Comprobantes y archivos subidos por usuarios
+api/uploads/
+web/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Cobertura de pruebas
+coverage/
+
+# Base de datos local suelta
+*.sqlite
+*.sqlite3
+*.db
+
+# Sistema operativo y editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# rsc: estado de máquina, se reconstruye con `rsc sync`
+.rsc/
+.dsh/
+
+# Material de análisis: bundles de terceros descargados (no se redistribuyen)
+rea_analysis/

@@ -1,0 +1,146 @@
+RSC_ONBOARDING_PLAN
+Plan id: 8e168f6277f8ef8b97149e819c6d992c3c955b8f83fa313f5b6c2b23d4689463
+Project: software (small)
+Technical level: technical
+Workflow: straight on the default branch (no branch questions)
+Emoji: on (as before)
+AGENT: ask the person «¿Quieres emoji en las respuestas, los commits y los mensajes de rsc? (sí | no; por defecto sí)». If their answer differs from the line above, generate the plan again with --emoji <on|off>.
+AGENT: ask the person «¿Los cambios de código van directos a main, o con ramas y pull request?» (main | branches; branches is for long-lived, complex code). If their answer differs from the line above, generate the plan again with --workflow <answer>.
+AGENT: before accepting, read these values back to the person and check each one is what they answered.
+Targets: deepseek
+Selected:
+  + capability/memory — Local bounded project memory supports continuity without an external account.
+  + route/harness-documents — The accepted profile and plan are persisted under 02-DOCS/wiki/harness/.
+  + skill/analyze — Included in the development workflow for small software.
+  + skill/automation-strategy — Included in the development workflow for small software.
+  + skill/clarify — Included in the development workflow for small software.
+  + skill/connect-tool — Included in the development workflow for small software.
+  + skill/constitution — Included in the development workflow for small software.
+  + skill/debug — Included in the development workflow for small software.
+  + skill/decision-challenge — Included in the development workflow for small software.
+  + skill/deprecation — Included in the development workflow for small software.
+  + skill/design — Included in the development workflow for small software.
+  + skill/fable-operator — Included in the development workflow for small software.
+  + skill/ftd — Included in the development workflow for small software.
+  + skill/harness — Included in the development workflow for small software.
+  + skill/idea-refinement — Included in the development workflow for small software.
+  + skill/implement — Included in the development workflow for small software.
+  + skill/init — Included in the development workflow for small software.
+  + skill/orient — Included in the development workflow for small software.
+  + skill/parallel — Included in the development workflow for small software.
+  + skill/plan — Included in the development workflow for small software.
+  + skill/review — Included in the development workflow for small software.
+  + skill/sdd-init — Included in the development workflow for small software.
+  + skill/security-audit — Included in the development workflow for small software.
+  + skill/ship — Included in the development workflow for small software.
+  + skill/simplify-code — Included in the development workflow for small software.
+  + skill/source-grounded-development — Included in the development workflow for small software.
+  + skill/specify — Included in the development workflow for small software.
+  + skill/suggest — Included in the development workflow for small software.
+  + skill/tasks — Included in the development workflow for small software.
+  + skill/tidy — Included in the development workflow for small software.
+  + skill/unslop — Included in the development workflow for small software.
+  + skill/ux — Included in the development workflow for small software.
+  + skill/verify — Included in the development workflow for small software.
+  + skill/worktrees — Included in the development workflow for small software.
+Deferred:
+  - agent/base-agents — No substantial software implementation is planned. Reevaluate: substantial software implementation is introduced
+  - guard/gitmoji-guard — No selected target and project policy justify this Claude-only commit guard. Reevaluate: Claude Code is selected and a governed software workflow adopts the convention
+  - hook/code-hooks — Code-only gates would add unrelated behavior to this project. Reevaluate: a substantial software workflow is accepted
+  - workflow/asdd — The asdd skill is installed, so the chain is one request away; the practice is deferred: the software scope is small, so specification overhead is not justified yet. Reevaluate: multiple related features; authentication or persistence; external integrations; cross-cutting changes
+Excluded:
+  × integration/context7 — External MCP connections require a separate, provider-specific consent flow and are outside this local harness plan.
+Managed paths:
+  .dsh/hooks.json
+  .dsh/skills/.rsc-state.json
+  .dsh/skills/analyze
+  .dsh/skills/asdd
+  .dsh/skills/automation-strategy
+  .dsh/skills/clarify
+  .dsh/skills/connect-tool
+  .dsh/skills/constitution
+  .dsh/skills/debug
+  .dsh/skills/decision-challenge
+  .dsh/skills/deprecation
+  .dsh/skills/design
+  .dsh/skills/fable-operator
+  .dsh/skills/ftd
+  .dsh/skills/harness
+  .dsh/skills/idea-refinement
+  .dsh/skills/implement
+  .dsh/skills/init
+  .dsh/skills/orient
+  .dsh/skills/parallel
+  .dsh/skills/plan
+  .dsh/skills/review
+  .dsh/skills/sdd-init
+  .dsh/skills/security-audit
+  .dsh/skills/ship
+  .dsh/skills/simplify-code
+  .dsh/skills/source-grounded-development
+  .dsh/skills/specify
+  .dsh/skills/suggest
+  .dsh/skills/tasks
+  .dsh/skills/tidy
+  .dsh/skills/unslop
+  .dsh/skills/ux
+  .dsh/skills/verify
+  .dsh/skills/worktrees
+  .rsc.json
+  .rsc/.base-versions.json
+  .rsc/.no-context7
+  .rsc/.no-trunk-guard
+  .rsc/.version
+  .rsc/auto-update.mjs
+  .rsc/backups/
+  .rsc/knowledge-sync.mjs
+  .rsc/memslop-offer.mjs
+  .rsc/session-memory-adapter.mjs
+  .rsc/session-memory-core.mjs
+  .rsc/session-memory.mjs
+  .rsc/skills/analyze
+  .rsc/skills/asdd
+  .rsc/skills/automation-strategy
+  .rsc/skills/clarify
+  .rsc/skills/connect-tool
+  .rsc/skills/constitution
+  .rsc/skills/debug
+  .rsc/skills/decision-challenge
+  .rsc/skills/deprecation
+  .rsc/skills/design
+  .rsc/skills/fable-operator
+  .rsc/skills/ftd
+  .rsc/skills/harness
+  .rsc/skills/idea-refinement
+  .rsc/skills/implement
+  .rsc/skills/init
+  .rsc/skills/orient
+  .rsc/skills/parallel
+  .rsc/skills/plan
+  .rsc/skills/review
+  .rsc/skills/sdd-init
+  .rsc/skills/security-audit
+  .rsc/skills/ship
+  .rsc/skills/simplify-code
+  .rsc/skills/source-grounded-development
+  .rsc/skills/specify
+  .rsc/skills/suggest
+  .rsc/skills/tasks
+  .rsc/skills/tidy
+  .rsc/skills/unslop
+  .rsc/skills/ux
+  .rsc/skills/verify
+  .rsc/skills/worktrees
+  .rsc/trunk-policy.mjs
+  02-DOCS/wiki/harness/decisions.md
+  02-DOCS/wiki/harness/installation-plan.md
+  02-DOCS/wiki/harness/user-profile.md
+  AGENTS.md
+Scaffolded once (yours to edit; never overwritten; purge removes only untouched files):
+  01-TOOLS/.gitignore
+  01-TOOLS/_TEMPLATE/.env.example
+  01-TOOLS/_TEMPLATE/.gitignore
+  01-TOOLS/_TEMPLATE/CREDENTIALS.md
+  01-TOOLS/_TEMPLATE/README.md
+  01-TOOLS/_TEMPLATE/test_connection.sh
+Accept exactly this plan: npx @ericrisco/rsc@4.1.7 onboard --technical-level technical --project-kind software --goal-base64 U2lzdGVtYSBkZSBnZXN0acOzbiBkZSBjdW90YXMgcGFyYSBjbHViIGRlcG9ydGl2bw --software-scope small --workflow main --target deepseek --accept-plan 8e168f6277f8ef8b97149e819c6d992c3c955b8f83fa313f5b6c2b23d4689463
