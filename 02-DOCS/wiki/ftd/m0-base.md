@@ -41,6 +41,7 @@ club (rojo/negro/blanco) aplicado. Es el cimiento de M1 a M5: sin esto, ningún 
 - [x] T5 — Better Auth montado en `/api/auth/*` y el esquema de auth migrado.
 - [x] T6 — `web`: Vite + Tailwind + shadcn init, proxy `/api` funcionando, tema del club aplicado.
 - [x] T7 — Cierre: login de prueba y shell visible con sidebar negra y rojo `#DF022F`.
+- [x] T8 — Pantalla de login real: formulario con RHF + Zod, sesión en cookie y shell protegido.
 
 ## Evidence
 
@@ -88,6 +89,23 @@ autenticación funciona por API (probada arriba), pero la interfaz es solo el sh
 siguiente paso antes de M1.
 
 Usuario de prueba creado: `tesorero@osornorunners.cl`, rol `TESORERO`.
+
+### T8 — Pantalla de login (cerrada)
+
+Se agregó la pantalla de acceso, que faltaba para poder entrar al sistema desde el navegador.
+
+| Verificación | Resultado |
+|---|---|
+| Sin sesión, `GET /` | Renderiza login ("Sistema de cuotas", campos email y password, botón Ingresar), **no** el shell |
+| Cookie de sesión | `HttpOnly`, `Path=/`, `SameSite=Lax`, 7 días |
+| **E2E en navegador real** (Chrome por CDP, cookie inyectada) | `shell_visible: true` · `login_oculto: true` · `usuario_en_cabecera: true` · `boton_salir: true` |
+| Build de producción | OK — 174 módulos, JS 388,27 kB (gzip 121,26 kB) |
+
+El E2E se ejecuta con `node api/scripts/e2e-session-check.mjs <token> <ruta-chrome>`: abre Chrome
+headless, inyecta la cookie de sesión y comprueba que la app muestre el shell en vez del login.
+
+**Nota de honestidad:** los indicadores del panel siguen siendo de muestra. No leen la base de datos
+todavía; eso llega en M1–M3 cuando existan los endpoints.
 
 ## Next
 
