@@ -52,7 +52,7 @@ export const estadoPagoSchema = z.enum(['PENDIENTE', 'APROBADO', 'RECHAZADO']);
 // DTOs
 // ---------------------------------------------------------------------------
 
-export const crearSocioSchema = z.object({
+const socioBase = {
   rut: rutSchema,
   nombre: nombreSchema,
   anio: z.number().int().min(2020).max(2100),
@@ -60,6 +60,42 @@ export const crearSocioSchema = z.object({
   estado: estadoSocioSchema.optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   telefono: z.string().trim().max(30).optional(),
+};
+
+export const crearSocioSchema = z.object(socioBase);
+
+/**
+ * Edición de socio: mismos campos que el alta, todos opcionales, pero al
+ * menos uno debe venir (no se acepta un PATCH vacío).
+ *
+ * `activo` NO se edita por aquí: es estado server-owned. La baja es una
+ * transición controlada (DELETE → activo=0) y la reactivación será una acción
+ * administrativa explícita, no un campo libre del cliente.
+ */
+export const actualizarSocioSchema = z
+  .object({
+    rut: rutSchema.optional(),
+    nombre: nombreSchema.optional(),
+    anio: z.number().int().min(2020).max(2100).optional(),
+    sexo: z.string().trim().max(20).optional().or(z.literal('')),
+    estado: estadoSocioSchema.optional(),
+    email: z.string().email('Email inválido').optional().or(z.literal('')),
+    telefono: z.string().trim().max(30).optional().or(z.literal('')),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
+
+/**
+ * Query de listado de socios: búsqueda y filtros opcionales, con paginación.
+ */
+export const listarSociosQuerySchema = z.object({
+  q: z.string().trim().max(160).optional(),
+  estado: z.string().trim().max(30).optional(),
+  activo: z
+    .enum(['0', '1'])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === '1')),
+  pagina: z.coerce.number().int().min(1).default(1),
+  porPagina: z.coerce.number().int().min(1).max(100).default(25),
 });
 
 export const crearNivelCuotaSchema = z.object({
@@ -98,5 +134,7 @@ export const crearEgresoSchema = z.object({
 });
 
 export type CrearSocioInput = z.infer<typeof crearSocioSchema>;
+export type ActualizarSocioInput = z.infer<typeof actualizarSocioSchema>;
+export type ListarSociosQuery = z.infer<typeof listarSociosQuerySchema>;
 export type CrearPagoInput = z.infer<typeof crearPagoSchema>;
 export type CrearCuentaBancariaInput = z.infer<typeof crearCuentaBancariaSchema>;

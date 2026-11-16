@@ -34,6 +34,17 @@ Punto de entrada. Lee esto antes de actuar sobre el proyecto.
 - **Diferido a M5:** la importación de los 54 socios, en el PC de casa. Ver [contexto existente](product/contexto-existente.md#dónde-se-ejecuta-dos-entornos).
 - **Fase 2 (landing page):** no iniciada, por diseño.
 
+## SDD
+
+| Documento | Qué contiene |
+|---|---|
+| [Constitución](sdd/constitution.md) | Principios no negociables que heredan todas las fases |
+| [Config SDD](sdd/config.yaml) | Calibración de runtime (comandos, runners, review) |
+| [Spec — Socios M1](sdd/specs/socios-m1.md) | Contrato WHAT/WHY del módulo de socios |
+| [Plan — Socios M1](sdd/plans/socios-m1.md) | Arquitectura, interfaces, tareas y riesgo |
+| [Análisis — Socios M1](sdd/analysis/socios-m1.md) | Gate de consistencia entre artefactos |
+| [Decisiones SDD](sdd/decisions.md) | Registro append-only de decisiones del ciclo |
+
 ## Identidad en una línea
 
 Club **Osorno Runners**. Paleta **rojo, negro y blanco**. Rojo de marca `#DF022F` (medido del logo). Interfaz con sidebar negra, contenido blanco y rojo como acento.

@@ -1,43 +1,45 @@
 import { useState } from 'react';
 import { signOut } from '../lib/auth-client';
+import SociosPage from '../pages/SociosPage';
 
 /**
  * Shell del sistema — sidebar negra, contenido blanco, rojo como acento.
- * Es el esqueleto que M1–M5 llenarán con socios, cuotas y pagos.
+ * La navegación es por estado (sin router): cada sección con módulo real
+ * renderiza su página; las que faltan muestran el panel o un placeholder.
  */
 
-type NavItem = { label: string; active?: boolean; count?: number };
+type NavItem = { key: string; label: string; count?: number };
 
 const groups: { label: string; items: NavItem[] }[] = [
   {
     label: 'Club',
     items: [
-      { label: 'Panel', active: true },
-      { label: 'Socios' },
-      { label: 'Cuentas bancarias' },
+      { key: 'panel', label: 'Panel' },
+      { key: 'socios', label: 'Socios' },
+      { key: 'cuentas', label: 'Cuentas bancarias' },
     ],
   },
   {
     label: 'Cobranza',
     items: [
-      { label: 'Cuotas' },
-      { label: 'Pagos', count: 0 },
-      { label: 'Morosidad', count: 0 },
-      { label: 'Estado de cuenta' },
+      { key: 'cuotas', label: 'Cuotas' },
+      { key: 'pagos', label: 'Pagos', count: 0 },
+      { key: 'morosidad', label: 'Morosidad', count: 0 },
+      { key: 'estado', label: 'Estado de cuenta' },
     ],
   },
   {
     label: 'Finanzas',
     items: [
-      { label: 'Gastos' },
-      { label: 'Reportes' },
+      { key: 'gastos', label: 'Gastos' },
+      { key: 'reportes', label: 'Reportes' },
     ],
   },
   {
     label: 'Sistema',
     items: [
-      { label: 'Configuración' },
-      { label: 'Usuarios' },
+      { key: 'config', label: 'Configuración' },
+      { key: 'usuarios', label: 'Usuarios' },
     ],
   },
 ];
@@ -54,6 +56,7 @@ type Props = {
 };
 
 export default function Shell({ user }: Props) {
+  const [seccion, setSeccion] = useState('panel');
   const [period, setPeriod] = useState<'Mes' | 'Trimestre' | 'Año'>('Mes');
 
   return (
@@ -73,16 +76,16 @@ export default function Shell({ user }: Props) {
                 {g.label}
               </div>
               {g.items.map((item) => (
-                <a
-                  key={item.label}
-                  href="#"
-                  className={`relative flex items-center gap-[10px] px-[10px] py-[8px] rounded-lg text-[13px] mb-px ${
-                    item.active
+                <button
+                  key={item.key}
+                  onClick={() => setSeccion(item.key)}
+                  className={`relative flex items-center gap-[10px] w-full text-left px-[10px] py-[8px] rounded-lg text-[13px] mb-px ${
+                    seccion === item.key
                       ? 'bg-sidebar-accent text-white font-semibold'
                       : 'text-[#d6d6d6] hover:bg-sidebar-accent hover:text-white'
                   }`}
                 >
-                  {item.active && (
+                  {seccion === item.key && (
                     <span className="absolute left-[-10px] top-[8px] bottom-[8px] w-[3px] bg-sidebar-primary rounded-r" />
                   )}
                   <span className="w-4 h-4 flex items-center justify-center opacity-75 text-[11px]">•</span>
@@ -92,7 +95,7 @@ export default function Shell({ user }: Props) {
                       {item.count}
                     </span>
                   )}
-                </a>
+                </button>
               ))}
             </div>
           ))}
@@ -142,61 +145,81 @@ export default function Shell({ user }: Props) {
         </header>
 
         <main className="flex-1 p-6 max-w-[1500px] w-full">
-          <div className="flex items-end justify-between gap-4 mb-5 flex-wrap">
-            <div>
-              <h1 className="text-[21px] font-bold tracking-tight">Panel</h1>
-              <p className="text-[13px] text-muted-foreground mt-[3px]">
-                Resumen de cobranza del club · Noviembre 2026
-              </p>
-            </div>
-            <div className="flex gap-0.5 bg-secondary p-[3px] rounded-lg">
-              {(['Mes', 'Trimestre', 'Año'] as const).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPeriod(p)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium ${
-                    period === p ? 'bg-white shadow-sm font-semibold' : 'text-muted-foreground'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* KPI cards */}
-          <div className="grid grid-cols-4 gap-3.5 max-md:grid-cols-2">
-            <div className="bg-card border border-border rounded-[10px] p-4">
-              <div className="text-[11.5px] text-muted-foreground font-medium mb-2.5">Recaudado del mes</div>
-              <div className="text-[26px] font-bold font-mono leading-tight">$3.480.000</div>
-              <div className="text-[11.5px] text-success mt-1.5">▲ 12,4% vs. octubre</div>
-            </div>
-            <div className="bg-card border border-border rounded-[10px] p-4">
-              <div className="text-[11.5px] text-muted-foreground font-medium mb-2.5">Socios morosos</div>
-              <div className="text-[26px] font-bold font-mono leading-tight text-primary">8</div>
-              <div className="text-[11.5px] text-muted-foreground mt-1.5">2 más que el mes anterior</div>
-            </div>
-            <div className="bg-card border border-border rounded-[10px] p-4">
-              <div className="text-[11.5px] text-muted-foreground font-medium mb-2.5">Socios activos</div>
-              <div className="text-[26px] font-bold font-mono leading-tight">52</div>
-              <div className="text-[11.5px] text-muted-foreground mt-1.5">de 60 registrados</div>
-            </div>
-            <div className="bg-card border border-border rounded-[10px] p-4">
-              <div className="text-[11.5px] text-muted-foreground font-medium mb-2.5">Comprobantes por revisar</div>
-              <div className="text-[26px] font-bold font-mono leading-tight text-primary">6</div>
-              <div className="text-[11.5px] text-primary mt-1.5 font-semibold">Revisar bandeja →</div>
-            </div>
-          </div>
-
-          <div className="mt-5 bg-card border border-dashed border-border rounded-[10px] p-8 text-center text-muted-foreground text-sm">
-            Sesión iniciada como <strong className="text-foreground">{user.email}</strong>.
-            Los módulos de socios, cuotas y pagos se construyen en M1–M5.
-            <div className="mt-2 text-xs text-sidebar-muted">
-              Los indicadores de arriba son de muestra, todavía no leen la base de datos.
-            </div>
-          </div>
+          {seccion === 'socios' ? (
+            <SociosPage />
+          ) : (
+            <PanelPlaceholder user={user} period={period} setPeriod={setPeriod} />
+          )}
         </main>
       </div>
     </div>
+  );
+}
+
+function PanelPlaceholder({
+  user,
+  period,
+  setPeriod,
+}: {
+  user: { name?: string | null; email: string };
+  period: 'Mes' | 'Trimestre' | 'Año';
+  setPeriod: (p: 'Mes' | 'Trimestre' | 'Año') => void;
+}) {
+  return (
+    <>
+      <div className="flex items-end justify-between gap-4 mb-5 flex-wrap">
+        <div>
+          <h1 className="text-[21px] font-bold tracking-tight">Panel</h1>
+          <p className="text-[13px] text-muted-foreground mt-[3px]">
+            Resumen de cobranza del club · Noviembre 2026
+          </p>
+        </div>
+        <div className="flex gap-0.5 bg-secondary p-[3px] rounded-lg">
+          {(['Mes', 'Trimestre', 'Año'] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium ${
+                period === p ? 'bg-white shadow-sm font-semibold' : 'text-muted-foreground'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* KPI cards */}
+      <div className="grid grid-cols-4 gap-3.5 max-md:grid-cols-2">
+        <div className="bg-card border border-border rounded-[10px] p-4">
+          <div className="text-[11.5px] text-muted-foreground font-medium mb-2.5">Recaudado del mes</div>
+          <div className="text-[26px] font-bold font-mono leading-tight">$3.480.000</div>
+          <div className="text-[11.5px] text-success mt-1.5">▲ 12,4% vs. octubre</div>
+        </div>
+        <div className="bg-card border border-border rounded-[10px] p-4">
+          <div className="text-[11.5px] text-muted-foreground font-medium mb-2.5">Socios morosos</div>
+          <div className="text-[26px] font-bold font-mono leading-tight text-primary">8</div>
+          <div className="text-[11.5px] text-muted-foreground mt-1.5">2 más que el mes anterior</div>
+        </div>
+        <div className="bg-card border border-border rounded-[10px] p-4">
+          <div className="text-[11.5px] text-muted-foreground font-medium mb-2.5">Socios activos</div>
+          <div className="text-[26px] font-bold font-mono leading-tight">52</div>
+          <div className="text-[11.5px] text-muted-foreground mt-1.5">de 60 registrados</div>
+        </div>
+        <div className="bg-card border border-border rounded-[10px] p-4">
+          <div className="text-[11.5px] text-muted-foreground font-medium mb-2.5">Comprobantes por revisar</div>
+          <div className="text-[26px] font-bold font-mono leading-tight text-primary">6</div>
+          <div className="text-[11.5px] text-primary mt-1.5 font-semibold">Revisar bandeja →</div>
+        </div>
+      </div>
+
+      <div className="mt-5 bg-card border border-dashed border-border rounded-[10px] p-8 text-center text-muted-foreground text-sm">
+        Sesión iniciada como <strong className="text-foreground">{user.email}</strong>.
+        Los módulos de socios, cuotas y pagos se construyen en M1–M5.
+        <div className="mt-2 text-xs text-sidebar-muted">
+          Los indicadores de arriba son de muestra, todavía no leen la base de datos.
+        </div>
+      </div>
+    </>
   );
 }

@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { getPool } from './db/client.js';
 import { auth } from './auth.js';
+import { socios } from './socios/routes.js';
 
 const app = new Hono();
 
@@ -30,5 +31,10 @@ app.get('/api/health', async (c) => {
  * falta adaptador de servidor: se reenvía el request crudo al handler de auth.
  */
 app.all('/api/auth/*', (c) => auth.handler(c.req.raw));
+
+/**
+ * Rutas de negocio, protegidas por sesión dentro de cada router.
+ */
+app.route('/api/socios', socios);
 
 export default app;
