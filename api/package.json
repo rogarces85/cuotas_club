@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
+    "db:setup": "node scripts/setup-database.mjs",
     "db:migrate": "tsx src/migrate.ts"
   },
   "dependencies": {
