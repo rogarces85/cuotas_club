@@ -43,6 +43,11 @@ Punto de entrada. Lee esto antes de actuar sobre el proyecto.
 | [Spec — Socios M1](sdd/specs/socios-m1.md) | Contrato WHAT/WHY del módulo de socios |
 | [Plan — Socios M1](sdd/plans/socios-m1.md) | Arquitectura, interfaces, tareas y riesgo |
 | [Análisis — Socios M1](sdd/analysis/socios-m1.md) | Gate de consistencia entre artefactos |
+| [Spec — Cuotas M2](sdd/specs/cuotas-m2.md) | Contrato del módulo de cuotas |
+| [Plan — Cuotas M2](sdd/plans/cuotas-m2.md) | Arquitectura, interfaces, tareas y riesgo |
+| [Análisis — Cuotas M2](sdd/analysis/cuotas-m2.md) | Gate de consistencia de M2 |
+| [Revisión — Socios M1](sdd/reviews/socios-m1.md) | Panel adversarial tier 2 de M1 |
+| [Revisión — Cuotas M2](sdd/reviews/cuotas-m2.md) | Panel adversarial tier 2 de M2 |
 | [Decisiones SDD](sdd/decisions.md) | Registro append-only de decisiones del ciclo |
 
 ## Identidad en una línea

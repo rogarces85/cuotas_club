@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { signOut } from '../lib/auth-client';
 import SociosPage from '../pages/SociosPage';
+import CuotasPage from '../pages/CuotasPage';
 
 /**
  * Shell del sistema — sidebar negra, contenido blanco, rojo como acento.
@@ -147,6 +148,8 @@ export default function Shell({ user }: Props) {
         <main className="flex-1 p-6 max-w-[1500px] w-full">
           {seccion === 'socios' ? (
             <SociosPage />
+          ) : seccion === 'cuotas' ? (
+            <CuotasPage />
           ) : (
             <PanelPlaceholder user={user} period={period} setPeriod={setPeriod} />
           )}

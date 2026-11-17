@@ -5,6 +5,9 @@ import {
   listarSociosQuerySchema,
   rutSchema,
   montoClpSchema,
+  periodoSchema,
+  crearPeriodoCuotaSchema,
+  diaVencimientoSchema,
 } from '@cuotas-club/shared';
 
 /**
@@ -103,5 +106,30 @@ describe('montoClpSchema', () => {
     expect(montoClpSchema.parse(15000)).toBe(15000);
     expect(() => montoClpSchema.parse(15000.5)).toThrow();
     expect(() => montoClpSchema.parse(-1)).toThrow();
+  });
+});
+
+describe('periodoSchema y crearPeriodoCuotaSchema (M2)', () => {
+  it('acepta un período AAAA-MM válido', () => {
+    expect(periodoSchema.parse('2026-11')).toBe('2026-11');
+  });
+
+  it('rechaza meses inválidos (AC6)', () => {
+    expect(() => periodoSchema.parse('2026-13')).toThrow();
+    expect(() => periodoSchema.parse('2026-00')).toThrow();
+    expect(() => periodoSchema.parse('202611')).toThrow();
+    expect(() => periodoSchema.parse('nov-2026')).toThrow();
+  });
+
+  it('acepta un período de cuota con día de vencimiento', () => {
+    const r = crearPeriodoCuotaSchema.parse({ periodo: '2026-11', diaVencimiento: 10 });
+    expect(r.periodo).toBe('2026-11');
+    expect(r.diaVencimiento).toBe(10);
+  });
+
+  it('rechaza día de vencimiento fuera de rango', () => {
+    expect(() => diaVencimientoSchema.parse(0)).toThrow();
+    expect(() => diaVencimientoSchema.parse(32)).toThrow();
+    expect(() => diaVencimientoSchema.parse(10.5)).toThrow();
   });
 });

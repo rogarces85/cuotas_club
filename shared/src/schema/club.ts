@@ -69,6 +69,23 @@ export const nivelCuota = mysqlTable(
 );
 
 // ---------------------------------------------------------------------------
+// Períodos de cuota (cuánto se cobra cada mes y cuándo vence)
+// ---------------------------------------------------------------------------
+
+export const periodoCuota = mysqlTable(
+  'periodo_cuota',
+  {
+    id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+    periodo: varchar('periodo', { length: 7 }).notNull(), // AAAA-MM
+    diaVencimiento: tinyint('dia_vencimiento').notNull(),
+    createdAt: int('created_at').notNull(),
+  },
+  (t) => ({
+    periodoIdx: uniqueIndex('periodo_cuota_periodo_idx').on(t.periodo),
+  }),
+);
+
+// ---------------------------------------------------------------------------
 // Pagos
 // ---------------------------------------------------------------------------
 

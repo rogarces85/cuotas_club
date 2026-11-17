@@ -111,3 +111,41 @@ export function actualizarSocio(id: number, input: Partial<SocioInput>): Promise
 export function desactivarSocio(id: number): Promise<Socio> {
   return request<Socio>(`/socios/${id}`, { method: 'DELETE' });
 }
+
+// ---------------------------------------------------------------------------
+// Cuotas (M2)
+// ---------------------------------------------------------------------------
+
+export type PeriodoCuota = {
+  id: number;
+  periodo: string;
+  diaVencimiento: number;
+  createdAt: number;
+  totalDeudores?: number;
+};
+
+export type DeudaFila = {
+  socioId: number;
+  rut: string;
+  nombre: string;
+  tipo: string;
+  montoClp: number;
+};
+
+export type Deuda = {
+  periodo: string | null;
+  total: number;
+  filas: DeudaFila[];
+};
+
+export function listarPeriodos(): Promise<PeriodoCuota[]> {
+  return request<PeriodoCuota[]>('/cuotas/periodos');
+}
+
+export function crearPeriodo(input: { periodo: string; diaVencimiento: number }): Promise<PeriodoCuota> {
+  return request<PeriodoCuota>('/cuotas/periodos', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function obtenerDeuda(periodoId: number): Promise<Deuda> {
+  return request<Deuda>(`/cuotas/periodos/${periodoId}/deuda`);
+}

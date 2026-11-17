@@ -126,6 +126,24 @@ export const crearCuentaBancariaSchema = z.object({
   email: z.string().email('Email inválido').optional().or(z.literal('')),
 });
 
+/**
+ * Día de vencimiento de una cuota (1–31). La validez del día en meses cortos
+ * (febrero) se valida al usar el período, no en el rango 1–31.
+ */
+export const diaVencimientoSchema = z
+  .number()
+  .int('El día de vencimiento debe ser entero')
+  .min(1, 'Día mínimo 1')
+  .max(31, 'Día máximo 31');
+
+/**
+ * Creación de un período de cuota: mes (AAAA-MM) + día de vencimiento.
+ */
+export const crearPeriodoCuotaSchema = z.object({
+  periodo: periodoSchema,
+  diaVencimiento: diaVencimientoSchema,
+});
+
 export const crearEgresoSchema = z.object({
   categoriaId: z.number().int().positive().optional(),
   fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -138,3 +156,4 @@ export type ActualizarSocioInput = z.infer<typeof actualizarSocioSchema>;
 export type ListarSociosQuery = z.infer<typeof listarSociosQuerySchema>;
 export type CrearPagoInput = z.infer<typeof crearPagoSchema>;
 export type CrearCuentaBancariaInput = z.infer<typeof crearCuentaBancariaSchema>;
+export type CrearPeriodoCuotaInput = z.infer<typeof crearPeriodoCuotaSchema>;

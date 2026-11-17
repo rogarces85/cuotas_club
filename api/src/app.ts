@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { getPool } from './db/client.js';
 import { auth } from './auth.js';
 import { socios } from './socios/routes.js';
+import { cuotas } from './cuotas/routes.js';
 
 const app = new Hono();
 
@@ -36,5 +37,6 @@ app.all('/api/auth/*', (c) => auth.handler(c.req.raw));
  * Rutas de negocio, protegidas por sesión dentro de cada router.
  */
 app.route('/api/socios', socios);
+app.route('/api/cuotas', cuotas);
 
 export default app;

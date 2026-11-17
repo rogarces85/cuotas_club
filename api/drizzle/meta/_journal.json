@@ -8,6 +8,13 @@
       "when": 1794862648411,
       "tag": "0000_next_giant_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1794872626216,
+      "tag": "0001_fair_deadpool",
+      "breakpoints": true
     }
   ]
 }

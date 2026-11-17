@@ -55,3 +55,33 @@ autocontenida (9/9 checks, crea y limpia su propio socio).
 normalización RUT (cubierta por F1), `%`/`_` sin escapar, `estado` sin enum,
 colación no fijada, sin verificación de dígito verificador.
 
+## 2026-11-16 — M2 (cuotas): modelo periodo_cuota + deuda derivada
+
+**Decisión (usuario)** — las cuotas del período se modelan con una tabla
+`periodo_cuota` (mes AAAA-MM único + día de vencimiento) y la deuda es
+**derivada**: un socio activo sin `pago_mes` para el período debe; el monto
+sale de `nivel_cuota` según su `estado`. No se generan filas masivas por mes.
+
+**Por qué** — evita miles de filas al año y la sincronización con altas/bajas
+de socios; el estado de cuenta siempre refleja el padrón vivo.
+
+**Suposiciones registradas en la spec** — el monto se deriva de `nivel_cuota`
+(no se fija por período); el vencimiento es día del mes 1–31.
+
+## 2026-11-16 — Findings de la revisión adversarial de M2: resueltos
+
+**S1 (cardinalidad de la deuda)** — CORREGIDO. La consulta deduplica por tipo
+con subconsulta (`min(monto_clp)` group by `tipo`), evitando filas duplicadas si
+existen dos niveles activos del mismo tipo. Test de regresión añadido.
+
+**S2 (race → 500)** — CORREGIDO. La ruta captura `ER_DUP_ENTRY` (1062) y
+devuelve 409.
+
+**B1/B2/B3 (tests)** — CORREGIDO. Test de integración de `calcularDeuda`
+contra `osorno_runners_v2_test` (AC4/AC5/AC7 + monto por tipo); `verify-cuotas.mjs`
+limpia al inicio y al final (idempotente, verificado 2 veces) y ahora cubre AC7
+con un `pago_mes` real.
+
+**Nits/questions** — N+1 en `listarPeriodos` (solo rendimiento, aceptado);
+día 31 en meses cortos (riesgo diferido a M3/M4).
+
