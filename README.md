@@ -15,7 +15,7 @@ Cobra cuotas, registra pagos por transferencia con comprobante, valida quién pa
 | **M0** | Base: workspaces, base de datos, autenticación, tema y login | ✅ Terminado |
 | M1 | Socios: alta, edición, búsqueda | Siguiente |
 | M2 | Cuotas: períodos, montos, vencimientos | Pendiente |
-| M3 | Pagos: comprobantes, aprobación | Pendiente |
+| M3 | Pagos: comprobantes, aprobación y estado de cuenta | ✅ Backend completado | Pendiente frontend |
 | M4 | Cobranza: morosidad, estado de cuenta | Pendiente |
 | M5 | Cierre: reportes, gastos y carga de los 54 socios reales | Pendiente |
 | Fase 2 | Landing page pública del club | No iniciada |
@@ -199,3 +199,53 @@ El proyecto usa [rsc-harness](https://github.com/ericrisco/rsc-harness) para org
 ```bash
 npx @ericrisco/rsc@4.1.7 sync
 ```
+
+## Continuando desde casa
+
+Si estás retomando el trabajo en otra máquina, los pasos son:
+
+```bash
+# 1. Clonar el repo (o usar el que ya tengas)
+git clone https://github.com/rogarces85/cuotas_club.git
+cd cuotas_club
+
+# 2. Instalar dependencias (si aún no las tienes)
+npm install
+
+# 3. Levantar la base de datos (XAMPP) y verificar que el API arranque
+#    - Asegúrate de que MySQL/MariaDB esté corriendo en XAMPP
+#    - `cd api && npx tsx src/index.ts` y prueba http://localhost:8787/api/health
+
+# 4. Opcional: verificar que los cambios del M3 estén aplicados
+git log --oneline -3
+```
+
+### Tareas pendientes (M3 backend ya en repo, frontend por hacer)
+
+El backend del módulo **M3 - Pagos** ya está completo y subido a GitHub (commit `32fb53e`). Queda por implementar en el frontend:
+
+| Tarea | Archivo | Descripción |
+|---|---|---|
+| **T3** | `web/src/pages/PagosPage.tsx` | Componente React para listing, crear, aprobar y rechazar pagos |
+| **T4** | `web/src/pages/EstadoCuentaPage.tsx` | Ver quién debe qué (deuda derivada: socio activo + periodos sin `pago.estado='APROBADO'`) |
+| **T5** | Shell navigation | Integrar enlaces a Pagos/Estado de cuenta en el shell lateral |
+| **T6** | Acceptance test | Tests E2E o de nivel API para validar el flujo CRUD y aprobación |
+
+### Comandos útiles desde casa
+
+```bash
+# Ver estado actual del repo
+git status
+
+# Ver el commit donde quedó M3  
+git log --oneline -1
+
+# Typecheck y build
+npm run typecheck   # en api, shared, web
+npm run build       # en los tres workspaces
+
+# Levantar el sistema completo
+npm run dev         # API :8787 + frontend :5173
+```
+
+---
