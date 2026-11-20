@@ -107,14 +107,38 @@ export const crearNivelCuotaSchema = z.object({
 
 export const crearPagoSchema = z.object({
   socioId: z.number().int().positive(),
+  rut: rutSchema,
+  nombreSnapshot: nombreSchema,
   anio: z.number().int().min(2020).max(2100),
+  sexo: z.string().trim().max(20).optional(),
+  estado: estadoSocioSchema.optional(),
+  situacion: z.string().trim().max(30).optional(),
   fechaPago: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida: AAAA-MM-DD'),
   totalPago: montoClpSchema,
   valorCuota: montoClpSchema,
   tipoCuota: tipoCuotaSchema,
-  periodos: z.array(periodoSchema).min(1, 'Debe cubrir al menos un mes'),
+  mesesCantidad: z.number().int().min(1).max(12),
+  mesesDetalle: z.string().max(120).optional(),
   observacion: z.string().max(255).optional(),
   origen: origenPagoSchema.optional(),
+});
+
+/**
+ * Query de listado de pagos: filtro por estado, socio, paginación.
+ */
+export const listarPagosQuerySchema = z.object({
+  estado: z.enum(['PENDIENTE', 'APROBADO', 'RECHAZADO']).optional(),
+  socioId: z.number().int().positive().optional(),
+  pagina: z.coerce.number().int().min(1).default(1),
+  porPagina: z.coerce.number().int().min(1).max(100).default(25),
+});
+
+/**
+ * Aprobación / rechazo de un pago pendiente.
+ */
+export const actualizarPagoSchema = z.object({
+  estado: z.enum(['APROBADO', 'RECHAZADO']),
+  motivo: z.string().max(255).optional(),
 });
 
 export const crearCuentaBancariaSchema = z.object({
@@ -155,5 +179,7 @@ export type CrearSocioInput = z.infer<typeof crearSocioSchema>;
 export type ActualizarSocioInput = z.infer<typeof actualizarSocioSchema>;
 export type ListarSociosQuery = z.infer<typeof listarSociosQuerySchema>;
 export type CrearPagoInput = z.infer<typeof crearPagoSchema>;
+export type ListarPagosQuery = z.infer<typeof listarPagosQuerySchema>;
+export type ActualizarPagoInput = z.infer<typeof actualizarPagoSchema>;
 export type CrearCuentaBancariaInput = z.infer<typeof crearCuentaBancariaSchema>;
 export type CrearPeriodoCuotaInput = z.infer<typeof crearPeriodoCuotaSchema>;

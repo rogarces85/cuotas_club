@@ -110,6 +110,7 @@ export const pago = mysqlTable(
     observacion: varchar('observacion', { length: 255 }),
     origen: mysqlEnum('origen', ['manual', 'banco', 'historico']).notNull().default('manual'),
     createdAt: int('created_at').notNull(),
+    updatedAt: int('updated_at').notNull(),
   },
   (t) => ({
     socioIdx: index('pago_socio_idx').on(t.socioId),
