@@ -59,16 +59,15 @@ export async function periodoPorMes(periodo: string) {
 }
 
 export async function crearPeriodo(input: CrearPeriodoCuotaInput) {
-  const [fila] = await db
+  const [result] = await db
     .insert(periodoCuota)
     .values({
       periodo: input.periodo,
       diaVencimiento: input.diaVencimiento,
       createdAt: nowSec(),
-    })
-    .$returningId();
+    });
 
-  return obtenerPeriodo(fila.id);
+  return obtenerPeriodo(Number(result.insertId));
 }
 
 /**
@@ -90,31 +89,26 @@ export async function calcularDeuda(periodoId: number) {
   const periodo = await obtenerPeriodo(periodoId);
   if (!periodo) return { periodo: null, total: 0, filas: [] as DeudaFila[] };
 
-  const nivelUnico = db
-    .select({
-      tipo: nivelCuota.tipo,
-      montoClp: sql<number>`min(${nivelCuota.montoClp})`.as('montoClp'),
-    })
-    .from(nivelCuota)
-    .where(eq(nivelCuota.activo, 1))
-    .groupBy(nivelCuota.tipo)
-    .as('nivel_unico');
-
+  // GROUP BY + MIN deduplica niveles si hay más de uno activo por tipo.
   const filas = await db
     .select({
       socioId: socio.id,
       rut: socio.rut,
       nombre: socio.nombre,
       tipo: socio.estado,
-      montoClp: sql<number>`coalesce(${nivelUnico.montoClp}, 0)`,
+      montoClp: sql<number>`COALESCE(MIN(${nivelCuota.montoClp}), 0)`,
     })
     .from(socio)
-    .leftJoin(nivelUnico, eq(socio.estado, nivelUnico.tipo))
+    .leftJoin(
+      nivelCuota,
+      and(eq(nivelCuota.tipo, socio.estado), eq(nivelCuota.activo, 1)),
+    )
     .leftJoin(
       pagoMes,
       and(eq(pagoMes.socioId, socio.id), eq(pagoMes.periodo, periodo.periodo)),
     )
-    .where(and(eq(socio.activo, 1), isNull(pagoMes.id)));
+    .where(and(eq(socio.activo, 1), isNull(pagoMes.id)))
+    .groupBy(socio.id, socio.rut, socio.nombre, socio.estado);
 
   return {
     periodo: periodo.periodo,
