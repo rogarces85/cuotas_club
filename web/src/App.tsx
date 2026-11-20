@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useSession } from './lib/auth-client';
 import LoginPage from './pages/LoginPage';
 import Shell from './components/Shell';
@@ -6,12 +7,16 @@ import Shell from './components/Shell';
  * Puerta de entrada del sistema.
  *
  * Sin sesión → pantalla de login.
- * Con sesión → shell del club.
+ * Con sesión → shell del club con navegación entre vistas (Panel, Socios, Cuotas).
  *
  * La sesión vive en cookie (Better Auth) y useSession() la resuelve al cargar.
  */
+
+type View = 'panel' | 'socios' | 'cuotas';
+
 export default function App() {
   const { data: session, isPending } = useSession();
+  const [view, setView] = useState<View>('panel');
 
   if (isPending) {
     return (
@@ -28,5 +33,15 @@ export default function App() {
     return <LoginPage />;
   }
 
-  return <Shell user={{ name: session.user.name, email: session.user.email }} />;
+  return (
+    <Shell
+      user={{ name: session.user.name, email: session.user.email }}
+      activeItem={view}
+      onItemClick={(label) => {
+        if (label === 'Socios') setView('socios');
+        else if (label === 'Cuotas') setView('cuotas');
+        else setView('panel');
+      }}
+    />
+  );
 }
