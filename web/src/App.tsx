@@ -12,7 +12,11 @@ import Shell from './components/Shell';
  * La sesión vive en cookie (Better Auth) y useSession() la resuelve al cargar.
  */
 
-type View = 'panel' | 'socios' | 'cuentas' | 'cuotas' | 'pagos' | 'morosidad' | 'estado' | 'bancos' | 'reportes' | 'config';
+type View = 'panel' | 'socios' | 'cuentas' | 'cuotas' | 'pagos' | 'morosidad' | 'estado' | 'bancos' | 'gastos' | 'reportes' | 'config';
+
+const VIEWS: readonly View[] = [
+  'panel', 'socios', 'cuentas', 'cuotas', 'pagos', 'morosidad', 'estado', 'bancos', 'gastos', 'reportes', 'config',
+];
 
 export default function App() {
   const { data: session, isPending } = useSession();
@@ -37,17 +41,10 @@ export default function App() {
     <Shell
       user={{ name: session.user.name, email: session.user.email }}
       activeItem={view}
-      onItemClick={(label) => {
-        if (label === 'Socios') setView('socios');
-        else if (label === 'Cuentas bancarias') setView('cuentas');
-        else if (label === 'Cuotas') setView('cuotas');
-        else if (label === 'Pagos') setView('pagos');
-        else if (label === 'Morosidad') setView('morosidad');
-        else if (label === 'Estado de cuenta') setView('estado');
-        else if (label === 'Bancos') setView('bancos');
-        else if (label === 'Reportes') setView('reportes');
-        else if (label === 'Configuración') setView('config');
-        else setView('panel');
+      // El sidebar entrega la clave del ítem (no su etiqueta). Si no es una
+      // vista conocida, se queda en el Panel.
+      onItemClick={(key) => {
+        if ((VIEWS as readonly string[]).includes(key)) setView(key as View);
       }}
     />
   );

@@ -13,7 +13,9 @@
     "dev": "concurrently -n api,web -c red,blue \"npm run dev -w api\" \"npm run dev -w web\"",
     "build": "npm run build -w shared && npm run build -w api && npm run build -w web",
     "typecheck": "npm run typecheck -w shared && npm run typecheck -w api && npm run typecheck -w web",
-    "test": "npm run test -w api"
+    "test": "npm run test -w api",
+    "verify:nav": "node web/scripts/verify-nav.mjs",
+    "e2e:nav": "node web/scripts/e2e-nav.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

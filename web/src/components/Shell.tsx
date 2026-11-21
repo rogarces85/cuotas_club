@@ -8,6 +8,7 @@ import ReportesPage from '../pages/ReportesPage';
 import ConfiguracionPage from '../pages/ConfiguracionPage';
 import PanelPage from '../pages/PanelPage';
 import CuentasBancariasPage from '../pages/CuentasBancariasPage';
+import GastosPage from '../pages/GastosPage';
 
 /**
  * Shell del sistema — sidebar negra, contenido blanco, rojo como acento.
@@ -64,7 +65,8 @@ function initials(name: string): string {
 type Props = {
   user: { name?: string | null; email: string };
   activeItem: string;
-  onItemClick: (label: string) => void;
+  /** Recibe la clave del ítem ('socios', 'cuotas', …), no su etiqueta. */
+  onItemClick: (key: string) => void;
 };
 
 export default function Shell({ user, activeItem, onItemClick }: Props) {
@@ -168,12 +170,12 @@ export default function Shell({ user, activeItem, onItemClick }: Props) {
             <EstadoCuentaPage />
           ) : activeItem === 'bancos' ? (
             <BancosPage />
+          ) : activeItem === 'gastos' ? (
+            <GastosPage />
           ) : activeItem === 'reportes' ? (
             <ReportesPage />
           ) : activeItem === 'config' ? (
             <ConfiguracionPage />
-          ) : activeItem === 'panel' ? (
-            <PanelPage />
           ) : (
             <PanelPage />
           )}
