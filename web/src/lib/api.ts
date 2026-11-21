@@ -437,3 +437,396 @@ export async function importarCartola(archivo: File): Promise<{
 export function conciliarMovimientos(): Promise<ConciliacionResult> {
   return request<ConciliacionResult>('/bancos/conciliar', { method: 'POST' });
 }
+
+// ---------------------------------------------------------------------------
+// Gastos (M5)
+// ---------------------------------------------------------------------------
+
+export type CategoriaEgreso = {
+  id: number;
+  nombre: string;
+  createdAt: number;
+};
+
+export type Egreso = {
+  id: number;
+  categoriaId: number | null;
+  fecha: string;
+  monto: number;
+  descripcion: string;
+  boletaRuta: string | null;
+  createdAt: number;
+  categoriaNombre: string | null;
+};
+
+export type GastoFijo = {
+  id: number;
+  descripcion: string;
+  monto: number;
+  periodicidad: string;
+  activo: number;
+  createdAt: number;
+};
+
+export type OtroIngreso = {
+  id: number;
+  fecha: string;
+  monto: number;
+  descripcion: string;
+  origen: string | null;
+  createdAt: number;
+};
+
+export function listarCategoriasEgreso(): Promise<CategoriaEgreso[]> {
+  return request<CategoriaEgreso[]>('/gastos/categorias');
+}
+
+export function crearCategoriaEgreso(nombre: string): Promise<CategoriaEgreso> {
+  return request<CategoriaEgreso>('/gastos/categorias', { method: 'POST', body: JSON.stringify({ nombre }) });
+}
+
+export function actualizarCategoriaEgreso(id: number, nombre: string): Promise<CategoriaEgreso> {
+  return request<CategoriaEgreso>(`/gastos/categorias/${id}`, { method: 'PATCH', body: JSON.stringify({ nombre }) });
+}
+
+export function eliminarCategoriaEgreso(id: number): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>(`/gastos/categorias/${id}`, { method: 'DELETE' });
+}
+
+export function listarEgresos(params: {
+  q?: string;
+  categoriaId?: number;
+  desde?: string;
+  hasta?: string;
+  pagina?: number;
+  porPagina?: number;
+}): Promise<{ total: number; pagina: number; porPagina: number; filas: Egreso[] }> {
+  const qs = new URLSearchParams();
+  if (params.q) qs.set('q', params.q);
+  if (params.categoriaId) qs.set('categoriaId', String(params.categoriaId));
+  if (params.desde) qs.set('desde', params.desde);
+  if (params.hasta) qs.set('hasta', params.hasta);
+  if (params.pagina) qs.set('pagina', String(params.pagina));
+  if (params.porPagina) qs.set('porPagina', String(params.porPagina));
+  const query = qs.toString();
+  return request(`/gastos/egresos${query ? `?${query}` : ''}`);
+}
+
+export function crearEgreso(input: { categoriaId?: number; fecha: string; monto: number; descripcion: string }): Promise<Egreso> {
+  return request<Egreso>('/gastos/egresos', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function obtenerEgreso(id: number): Promise<Egreso> {
+  return request<Egreso>(`/gastos/egresos/${id}`);
+}
+
+export function actualizarEgreso(id: number, input: { categoriaId?: number; fecha?: string; monto?: number; descripcion?: string; boletaRuta?: string }): Promise<Egreso> {
+  return request<Egreso>(`/gastos/egresos/${id}`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export function eliminarEgreso(id: number): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>(`/gastos/egresos/${id}`, { method: 'DELETE' });
+}
+
+export async function subirBoletaEgreso(egresoId: number, archivo: File): Promise<{ ruta: string; nombreArchivo: string; mime: string; bytes: number; sha256: string }> {
+  const formData = new FormData();
+  formData.append('archivo', archivo);
+
+  const res = await fetch(`${BASE}/gastos/egresos/${egresoId}/boleta`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let message = `Error ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) message = body.error;
+    } catch {
+      // sin cuerpo JSON
+    }
+    throw new ApiError(res.status, message);
+  }
+
+  return (await res.json()) as { ruta: string; nombreArchivo: string; mime: string; bytes: number; sha256: string };
+}
+
+export function listarGastosFijos(params: { activo?: boolean; pagina?: number; porPagina?: number }): Promise<{ total: number; pagina: number; porPagina: number; filas: GastoFijo[] }> {
+  const qs = new URLSearchParams();
+  if (params.activo !== undefined) qs.set('activo', params.activo ? '1' : '0');
+  if (params.pagina) qs.set('pagina', String(params.pagina));
+  if (params.porPagina) qs.set('porPagina', String(params.porPagina));
+  const query = qs.toString();
+  return request(`/gastos/fijos${query ? `?${query}` : ''}`);
+}
+
+export function crearGastoFijo(input: { descripcion: string; monto: number; periodicidad: 'mensual' | 'trimestral' | 'semestral' | 'anual' }): Promise<GastoFijo> {
+  return request<GastoFijo>('/gastos/fijos', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function actualizarGastoFijo(id: number, input: { descripcion?: string; monto?: number; periodicidad?: 'mensual' | 'trimestral' | 'semestral' | 'anual'; activo?: boolean }): Promise<GastoFijo> {
+  return request<GastoFijo>(`/gastos/fijos/${id}`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export function eliminarGastoFijo(id: number): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>(`/gastos/fijos/${id}`, { method: 'DELETE' });
+}
+
+export function listarOtrosIngresos(params: { q?: string; desde?: string; hasta?: string; pagina?: number; porPagina?: number }): Promise<{ total: number; pagina: number; porPagina: number; filas: OtroIngreso[] }> {
+  const qs = new URLSearchParams();
+  if (params.q) qs.set('q', params.q);
+  if (params.desde) qs.set('desde', params.desde);
+  if (params.hasta) qs.set('hasta', params.hasta);
+  if (params.pagina) qs.set('pagina', String(params.pagina));
+  if (params.porPagina) qs.set('porPagina', String(params.porPagina));
+  const query = qs.toString();
+  return request(`/gastos/ingresos${query ? `?${query}` : ''}`);
+}
+
+export function crearOtroIngreso(input: { fecha: string; monto: number; descripcion: string; origen?: string }): Promise<OtroIngreso> {
+  return request<OtroIngreso>('/gastos/ingresos', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function actualizarOtroIngreso(id: number, input: { fecha?: string; monto?: number; descripcion?: string; origen?: string }): Promise<OtroIngreso> {
+  return request<OtroIngreso>(`/gastos/ingresos/${id}`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export function eliminarOtroIngreso(id: number): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>(`/gastos/ingresos/${id}`, { method: 'DELETE' });
+}
+
+export function urlBoletaEgreso(sha256: string): string {
+  return `${BASE}/gastos/boletas/${sha256}`;
+}
+
+// ---------------------------------------------------------------------------
+// Reportes (M5)
+// ---------------------------------------------------------------------------
+
+export type BalanceResumen = {
+  periodo: string;
+  inicio: string;
+  fin: string;
+  ingresos: { pagosAprobados: number; otrosIngresos: number; total: number };
+  egresos: { variables: number; fijosMensuales: number; total: number };
+  saldo: number;
+  detalle: {
+    pagos: { id: number; fecha: string; monto: number; rut: string; nombre: string; tipo: string; meses: string }[];
+    egresos: { id: number; fecha: string; monto: number; descripcion: string; categoria: string; tieneBoleta: boolean }[];
+    otrosIngresos: { id: number; fecha: string; monto: number; descripcion: string; origen: string }[];
+    gastosFijos: { id: number; descripcion: string; montoOriginal: number; montoMensual: number; periodicidad: string }[];
+  };
+};
+
+export async function obtenerBalance(params: { periodo?: string; desde?: string; hasta?: string; formato?: 'json' | 'xlsx' | 'pdf' }): Promise<BalanceResumen | Blob> {
+  const qs = new URLSearchParams();
+  if (params.periodo) qs.set('periodo', params.periodo);
+  if (params.desde) qs.set('desde', params.desde);
+  if (params.hasta) qs.set('hasta', params.hasta);
+  if (params.formato) qs.set('formato', params.formato);
+  const query = qs.toString();
+
+  const res = await fetch(`${BASE}/reportes/balance${query ? `?${query}` : ''}`, {
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    let message = `Error ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) message = body.error;
+    } catch {
+      // sin cuerpo JSON
+    }
+    throw new ApiError(res.status, message);
+  }
+
+  if (params.formato === 'xlsx' || params.formato === 'pdf') {
+    return res.blob();
+  }
+
+  return (await res.json()) as BalanceResumen;
+}
+
+export function descargarBalanceXLSX(params: { periodo?: string; desde?: string; hasta?: string }): Promise<Blob> {
+  return obtenerBalance({ ...params, formato: 'xlsx' }) as Promise<Blob>;
+}
+
+export function descargarBalancePDF(params: { periodo?: string; desde?: string; hasta?: string }): Promise<Blob> {
+  return obtenerBalance({ ...params, formato: 'pdf' }) as Promise<Blob>;
+}
+
+// ---------------------------------------------------------------------------
+// Configuración (M5)
+// ---------------------------------------------------------------------------
+
+export type ConfigClub = {
+  nombre_club: string | null;
+  logo_url: string | null;
+  direccion: string | null;
+  telefono: string | null;
+  email: string | null;
+  email_tesoreria: string | null;
+  meta_mensual: string | null;
+};
+
+export type LogoClub = {
+  id: number;
+  ruta: string;
+  mime: string;
+  bytes: number;
+  sha256: string;
+  url: string;
+};
+
+export type UsuarioRol = {
+  userId: string;
+  rol: 'DIRECTIVA' | 'TESORERO' | 'SOCIO';
+  createdAt: number;
+};
+
+export function obtenerConfig(): Promise<ConfigClub> {
+  return request<ConfigClub>('/config');
+}
+
+export function actualizarConfig(input: Partial<ConfigClub>): Promise<ConfigClub> {
+  return request<ConfigClub>('/config', { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export function obtenerLogo(): Promise<{ logo: LogoClub | null }> {
+  return request<{ logo: LogoClub | null }>('/config/logo');
+}
+
+export async function subirLogo(archivo: File): Promise<{ logo: LogoClub }> {
+  const formData = new FormData();
+  formData.append('archivo', archivo);
+
+  const res = await fetch(`${BASE}/config/logo`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let message = `Error ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) message = body.error;
+    } catch {
+      // sin cuerpo JSON
+    }
+    throw new ApiError(res.status, message);
+  }
+
+  return (await res.json()) as { logo: LogoClub };
+}
+
+export function listarUsuariosConRol(): Promise<UsuarioRol[]> {
+  return request<UsuarioRol[]>('/config/usuarios');
+}
+
+export function asignarRolUsuario(userId: string, rol: 'DIRECTIVA' | 'TESORERO' | 'SOCIO'): Promise<UsuarioRol> {
+  return request<UsuarioRol>('/config/usuarios', { method: 'POST', body: JSON.stringify({ userId, rol }) });
+}
+
+export function actualizarRolUsuario(userId: string, rol: 'DIRECTIVA' | 'TESORERO' | 'SOCIO'): Promise<UsuarioRol> {
+  return request<UsuarioRol>(`/config/usuarios/${userId}`, { method: 'PATCH', body: JSON.stringify({ rol }) });
+}
+
+export function eliminarRolUsuario(userId: string): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>(`/config/usuarios/${userId}`, { method: 'DELETE' });
+}
+
+export async function importarSocios(archivo: File, force = false): Promise<{ insertados: number; actualizados: number; saltados: number; errores: number; detalleErrores: string[] }> {
+  const formData = new FormData();
+  formData.append('archivo', archivo);
+  formData.append('force', String(force));
+
+  const res = await fetch(`${BASE}/config/importar/socios`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let message = `Error ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) message = body.error;
+    } catch {
+      // sin cuerpo JSON
+    }
+    throw new ApiError(res.status, message);
+  }
+
+  return (await res.json()) as { insertados: number; actualizados: number; saltados: number; errores: number; detalleErrores: string[] };
+}
+
+export function urlLogo(sha256: string): string {
+  return `${BASE}/config/logo/${sha256}`;
+}
+
+// ---------------------------------------------------------------------------
+// Panel (M5)
+// ---------------------------------------------------------------------------
+
+export type PanelKPIs = {
+  mes: string;
+  recaudadoMes: number;
+  sociosMorosos: number;
+  sociosActivos: number;
+  comprobantesPendientes: number;
+};
+
+export type PanelRecaudacion = {
+  serie: { periodo: string; monto: number }[];
+};
+
+export type PanelUltimosPagos = {
+  pagos: { id: number; fechaPago: string; totalPago: number; rut: string; nombreSnapshot: string; tipoCuota: string }[];
+};
+
+export type PanelMeta = {
+  mes: string;
+  meta: number;
+  recaudado: number;
+  porcentaje: number;
+  faltante: number;
+};
+
+export type PanelResumen = {
+  mes: string;
+  ingresos: { pagos: number; otros: number; total: number };
+  egresos: { variables: number; fijos: number; total: number };
+  saldo: number;
+};
+
+export function obtenerKPIs(mes?: string): Promise<PanelKPIs> {
+  const qs = new URLSearchParams();
+  if (mes) qs.set('mes', mes);
+  const query = qs.toString();
+  return request<PanelKPIs>(`/panel/kpis${query ? `?${query}` : ''}`);
+}
+
+export function obtenerRecaudacion(): Promise<PanelRecaudacion> {
+  return request<PanelRecaudacion>('/panel/recaudacion');
+}
+
+export function obtenerUltimosPagos(): Promise<PanelUltimosPagos> {
+  return request<PanelUltimosPagos>('/panel/ultimos-pagos');
+}
+
+export function obtenerMeta(mes?: string): Promise<PanelMeta> {
+  const qs = new URLSearchParams();
+  if (mes) qs.set('mes', mes);
+  const query = qs.toString();
+  return request<PanelMeta>(`/panel/meta${query ? `?${query}` : ''}`);
+}
+
+export function obtenerResumenPanel(mes?: string): Promise<PanelResumen> {
+  const qs = new URLSearchParams();
+  if (mes) qs.set('mes', mes);
+  const query = qs.toString();
+  return request<PanelResumen>(`/panel/resumen${query ? `?${query}` : ''}`);
+}
