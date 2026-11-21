@@ -311,6 +311,16 @@ export const panelKpisQuerySchema = z.object({
 });
 
 /**
+ * Subida de logo del club.
+ */
+export const subirLogoSchema = z.object({
+  nombreArchivo: z.string().trim().min(1).max(255),
+  mime: z.string().trim().min(1).max(100),
+  bytes: z.number().int().positive(),
+  sha256: z.string().length(64, 'SHA256 debe tener 64 caracteres hex'),
+});
+
+/**
  * Query listado egresos.
  */
 export const listarEgresosQuerySchema = z.object({
@@ -369,3 +379,4 @@ export type PanelKpisQuery = z.infer<typeof panelKpisQuerySchema>;
 export type ListarEgresosQuery = z.infer<typeof listarEgresosQuerySchema>;
 export type ListarOtrosIngresosQuery = z.infer<typeof listarOtrosIngresosQuerySchema>;
 export type ListarGastosFijosQuery = z.infer<typeof listarGastosFijosQuerySchema>;
+export type SubirLogoInput = z.infer<typeof subirLogoSchema>;

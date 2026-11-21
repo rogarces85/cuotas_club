@@ -8,6 +8,7 @@ import { upload } from './upload/routes.js';
 import { bancos } from './bancos/routes.js';
 import { gastos } from './gastos/routes.js';
 import { reportes } from './reportes/routes.js';
+import { config } from './config/routes.js';
 
 const app = new Hono();
 
@@ -48,5 +49,6 @@ app.route('/api/upload', upload);
 app.route('/api/bancos', bancos);
 app.route('/api/gastos', gastos);
 app.route('/api/reportes', reportes);
+app.route('/api/config', config);
 
 export default app;

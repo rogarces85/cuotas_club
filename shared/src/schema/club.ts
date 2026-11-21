@@ -294,3 +294,36 @@ export const movimientoBancarioRelations = relations(movimientoBancario, ({ many
 export const usuarioRolRelations = relations(usuarioRol, ({ many }) => ({
   // sin relaciones por ahora
 }));
+
+// ---------------------------------------------------------------------------
+// Configuración del club
+// ---------------------------------------------------------------------------
+
+export const configClub = mysqlTable('config_club', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+  clave: varchar('clave', { length: 60 }).notNull(),
+  valor: varchar('valor', { length: 500 }),
+  createdAt: int('created_at').notNull(),
+  updatedAt: int('updated_at').notNull(),
+}, (t) => ({
+  claveIdx: uniqueIndex('config_club_clave_idx').on(t.clave),
+}));
+
+// Logo del club (solo uno activo)
+export const logoClub = mysqlTable('logo_club', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+  ruta: varchar('ruta', { length: 255 }).notNull(),
+  mime: varchar('mime', { length: 100 }).notNull(),
+  bytes: int('bytes', { unsigned: true }).notNull(),
+  sha256: varchar('sha256', { length: 64 }).notNull(),
+  activo: tinyint('activo').notNull().default(1),
+  createdAt: int('created_at').notNull(),
+});
+
+export const configClubRelations = relations(configClub, ({ many }) => ({
+  // sin relaciones por ahora
+}));
+
+export const logoClubRelations = relations(logoClub, ({ many }) => ({
+  // sin relaciones por ahora
+}));
