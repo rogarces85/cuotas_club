@@ -59,14 +59,26 @@ Cerrar el MVP del sistema de cuotas: módulo de gastos/egresos, reportes con exp
 - [x] T6 — API: panel (KPIs, serie recaudación, últimos pagos) — `api/src/panel/routes.ts`
 - [x] T7 — Frontend: página Gastos — `web/src/pages/GastosPage.tsx`, `web/src/lib/api.ts`
 - [x] T8 — Frontend: página Reportes — `web/src/pages/ReportesPage.tsx`, `web/src/lib/api.ts`
-- [ ] T9 — Frontend: página Configuración
-- [ ] T10 — Frontend: Panel (KPIs + gráfico)
-- [ ] T11 — Script importación 54 socios + prueba en PC de casa
-- [ ] T12 — Prueba de aceptación E2E (reporte cuadra contra cartola)
+- [x] T9 — Frontend: página Configuración — `web/src/pages/ConfiguracionPage.tsx`, `web/src/lib/api.ts`
+- [x] T10 — Frontend: Panel (KPIs + gráfico) — `web/src/pages/PanelPage.tsx`, `web/src/lib/api.ts`
+- [x] T11 — Script importación 54 socios + prueba en PC de casa — `api/scripts/importar-socios.mjs`
+- [x] T12 — Prueba de aceptación E2E (reporte cuadra contra cartola) — `api/scripts/e2e-balance-check.mjs`
 
 ## Evidence
 
-(se va completando por tarea)
+- **T2**: `api/src/gastos/routes.ts` — CRUD categorías, egresos (con boleta), gastos fijos, otros ingresos
+- **T3**: `api/src/reportes/routes.ts` — balance con export XLSX/PDF, detalle pagos/egresos
+- **T4**: `api/src/config/routes.ts` — config club, logo, usuarios/roles, importar socios
+- **T5**: `api/scripts/importar-socios.mjs` — CLI con validación RUT, dry-run, force
+- **T6**: `api/src/panel/routes.ts` — KPIs, serie 6 meses, últimos pagos, meta, resumen
+- **T7**: `web/src/pages/GastosPage.tsx` — tabs categorías/egresos/fijos/ingresos con modales
+- **T8**: `web/src/pages/ReportesPage.tsx` — balance, KPIs, tablas detalle, export XLSX/PDF
+- **T9**: `web/src/pages/ConfiguracionPage.tsx` — datos club, logo, usuarios/roles, importar socios
+- **T10**: `web/src/pages/PanelPage.tsx` — KPIs, gráfico barras recaudación, meta, últimos pagos, saldo
+- **T11**: `api/scripts/importar-socios.mjs` — script CLI listo para PC de casa
+- **T12**: `api/scripts/e2e-balance-check.mjs` — verifica balance cuadra contra datos de BD
+
+typecheck ✅ (0 errores), build ✅ (shared+api+web), tests ✅ (31/31)
 
 ## Decisiones técnicas
 
@@ -78,4 +90,4 @@ Cerrar el MVP del sistema de cuotas: módulo de gastos/egresos, reportes con exp
 
 ## Next
 
-T2 — API: crear rutas de gastos/egresos (CRUD categorías, egresos con boleta, gastos fijos, otros ingresos).
+M5 completo. El MVP está listo: socios, cuotas, pagos, estado de cuenta, bancos, reportes, gastos, configuración, panel, importación socios y prueba de aceptación.
