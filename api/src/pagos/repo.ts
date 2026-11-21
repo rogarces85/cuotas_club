@@ -2,6 +2,7 @@ import { and, eq, sql, isNull, desc } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { clubSchema } from '@cuotas-club/shared';
 import type { CrearPagoInput, ListarPagosQuery } from '@cuotas-club/shared';
+import { enviarCorreo, plantillaAprobado, plantillaRechazado } from '../mailer.js';
 
 /**
  * Acceso a pagos y comprobantes.
@@ -64,6 +65,7 @@ export async function obtenerPago(id: number) {
   const [fila] = await db
     .select({
       id: pago.id,
+      socioId: pago.socioId,
       rut: pago.rut,
       nombreSnapshot: pago.nombreSnapshot,
       anio: pago.anio,
@@ -100,7 +102,12 @@ export async function obtenerPago(id: number) {
     .from(comprobante)
     .where(eq(comprobante.pagoId, id));
 
-  return { ...fila, comprobantes: comps };
+  // Convertir fechaPago de Date a string AAAA-MM-DD
+  const fechaStr = fila.fechaPago instanceof Date
+    ? fila.fechaPago.toISOString().slice(0, 10)
+    : String(fila.fechaPago).slice(0, 10);
+
+  return { ...fila, fechaPago: fechaStr, comprobantes: comps };
 }
 
 // ---------------------------------------------------------------------------
@@ -189,19 +196,61 @@ export async function crearPago(input: CrearPagoInput) {
 }
 
 export async function aprobarPago(id: number) {
+  const pagoActual = await obtenerPago(id);
+  if (!pagoActual) return null;
+
   await db
     .update(pago)
     .set({ estado: 'APROBADO', updatedAt: nowSec() })
     .where(eq(pago.id, id));
 
+  // Obtener email del socio
+  const [s] = await db
+    .select({ email: socio.email, nombre: socio.nombre })
+    .from(socio)
+    .where(eq(socio.id, pagoActual.socioId))
+    .limit(1);
+
+  if (s?.email) {
+    const plantilla = plantillaAprobado({
+      id: pagoActual.id,
+      nombre: s.nombre,
+      total: pagoActual.totalPago,
+      fecha: pagoActual.fechaPago,
+    });
+    // Fire-and-forget: no bloquear la respuesta
+    enviarCorreo({ to: s.email, ...plantilla }).catch(() => {});
+  }
+
   return obtenerPago(id);
 }
 
 export async function rechazarPago(id: number, motivo?: string) {
+  const pagoActual = await obtenerPago(id);
+  if (!pagoActual) return null;
+
   await db
     .update(pago)
     .set({ estado: 'RECHAZADO', situacion: motivo ?? null, updatedAt: nowSec() })
     .where(eq(pago.id, id));
+
+  // Obtener email del socio
+  const [s] = await db
+    .select({ email: socio.email, nombre: socio.nombre })
+    .from(socio)
+    .where(eq(socio.id, pagoActual.socioId))
+    .limit(1);
+
+  if (s?.email) {
+    const plantilla = plantillaRechazado({
+      id: pagoActual.id,
+      nombre: s.nombre,
+      total: pagoActual.totalPago,
+      fecha: pagoActual.fechaPago,
+      motivo,
+    });
+    enviarCorreo({ to: s.email, ...plantilla }).catch(() => {});
+  }
 
   return obtenerPago(id);
 }

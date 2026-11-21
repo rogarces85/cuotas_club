@@ -14,15 +14,18 @@
     "db:migrate": "tsx src/migrate.ts"
   },
   "dependencies": {
-    "@cuotas-club/shared": "*",
     "@better-auth/drizzle-adapter": "^1.7.25",
+    "@cuotas-club/shared": "*",
     "@hono/node-server": "^2.1.8",
     "@hono/zod-validator": "^0.9.1",
+    "@types/nodemailer": "^8.0.2",
     "better-auth": "^1.7.25",
+    "csv-parse": "^7.0.3",
     "dotenv": "^18.0.10",
     "drizzle-orm": "^0.45.4",
     "hono": "^4.13.19",
     "mysql2": "^3.24.6",
+    "nodemailer": "^10.6.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {

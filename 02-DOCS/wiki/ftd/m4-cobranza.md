@@ -32,11 +32,11 @@ Cerrar el flujo principal de cobranza: que el socio pueda subir el comprobante d
 
 ## Checklist
 
-- [ ] T1 — FTD document (este archivo)
-- [ ] T2 — API: rutas de comprobantes (subida, descarga privada, actualización estado)
-- [ ] T3 — API: cuentas bancarias (CRUD) + importación cartola + conciliación
-- [ ] T4 — API: envío de correo al aprobar/rechazar (SMTP Gmail)
-- [ ] T5 — Frontend: subida de comprobante en PagosPage + visor
+- [x] T1 — FTD document (este archivo)
+- [x] T2 — API: rutas de comprobantes (subida, descarga privada, actualización estado) — `api/src/upload/routes.ts`, `api/src/pagos/routes.ts`, `api/src/pagos/repo.ts`
+- [x] T3 — API: cuentas bancarias (CRUD) + importación cartola + conciliación — `api/src/bancos/routes.ts`
+- [x] T4 — API: envío de correo al aprobar/rechazar (SMTP Gmail) — `api/src/mailer.ts`, integrado en `aprobarPago`/`rechazarPago`
+- [x] T5 — Frontend: subida de comprobante en PagosPage + visor — `web/src/pages/PagosPage.tsx`, `web/src/lib/api.ts`
 - [ ] T6 — Frontend: página Bancos (cuentas, importar cartola, conciliar)
 - [ ] T7 — Prueba de aceptación E2E (subir comprobante → aprobar → correo enviado)
 
