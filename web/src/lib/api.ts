@@ -149,3 +149,114 @@ export function crearPeriodo(input: { periodo: string; diaVencimiento: number })
 export function obtenerDeuda(periodoId: number): Promise<Deuda> {
   return request<Deuda>(`/cuotas/periodos/${periodoId}/deuda`);
 }
+
+// ---------------------------------------------------------------------------
+// Pagos (M3)
+// ---------------------------------------------------------------------------
+
+export type Comprobante = {
+  id: number;
+  pagoId: number;
+  ruta: string;
+  mime: string;
+  bytes: number;
+  sha256: string;
+  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  createdAt: number;
+};
+
+export type Pago = {
+  id: number;
+  codigoPago: string | null;
+  socioId: number;
+  rut: string;
+  nombreSnapshot: string;
+  anio: number;
+  sexo: string | null;
+  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  situacion: string | null;
+  fechaPago: string;
+  totalPago: number;
+  valorCuota: number;
+  tipoCuota: 'ACTIVO' | 'MEMBRESIA' | 'BECADO' | 'OTRO';
+  mesesCantidad: number;
+  mesesDetalle: string;
+  observacion: string | null;
+  origen: 'manual' | 'banco' | 'historico';
+  createdAt: number;
+  comprobantes?: Comprobante[];
+};
+
+export type ListaPagos = {
+  total: number;
+  pagina: number;
+  porPagina: number;
+  filas: Pago[];
+};
+
+export type Moroso = {
+  socioId: number;
+  rut: string;
+  nombre: string;
+  estado: string;
+  totalDeuda: number;
+  periodos: { periodo: string; diaVencimiento: number }[];
+};
+
+export type PagoInput = {
+  socioId: number;
+  rut: string;
+  nombreSnapshot: string;
+  anio: number;
+  sexo?: string;
+  estado?: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  situacion?: string;
+  fechaPago: string;
+  totalPago: number;
+  valorCuota: number;
+  tipoCuota: 'ACTIVO' | 'MEMBRESIA' | 'BECADO' | 'OTRO';
+  mesesCantidad: number;
+  mesesDetalle?: string;
+  observacion?: string;
+  origen?: 'manual' | 'banco' | 'historico';
+};
+
+export function listarPagos(params: {
+  q?: string;
+  estado?: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  socioId?: number;
+  pagina?: number;
+  porPagina?: number;
+}): Promise<ListaPagos> {
+  const qs = new URLSearchParams();
+  if (params.q) qs.set('q', params.q);
+  if (params.estado) qs.set('estado', params.estado);
+  if (params.socioId !== undefined) qs.set('socioId', String(params.socioId));
+  if (params.pagina) qs.set('pagina', String(params.pagina));
+  if (params.porPagina) qs.set('porPagina', String(params.porPagina));
+  const query = qs.toString();
+  return request<ListaPagos>(`/pagos${query ? `?${query}` : ''}`);
+}
+
+export function crearPago(input: PagoInput): Promise<Pago> {
+  return request<Pago>('/pagos', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function obtenerPago(id: number): Promise<Pago> {
+  return request<Pago>(`/pagos/${id}`);
+}
+
+export function aprobarPago(id: number): Promise<Pago> {
+  return request<Pago>(`/pagos/${id}/aprobar`, { method: 'PATCH' });
+}
+
+export function rechazarPago(id: number, motivo?: string): Promise<Pago> {
+  return request<Pago>(`/pagos/${id}/rechazar`, {
+    method: 'PATCH',
+    body: JSON.stringify({ estado: 'RECHAZADO', motivo }),
+  });
+}
+
+export function listarMorosos(): Promise<Moroso[]> {
+  return request<Moroso[]>('/pagos/morosos');
+}

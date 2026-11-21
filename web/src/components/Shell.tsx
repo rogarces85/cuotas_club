@@ -1,6 +1,8 @@
 import { signOut } from '../lib/auth-client';
 import SociosPage from '../pages/SociosPage';
 import CuotasPage from '../pages/CuotasPage';
+import PagosPage from '../pages/PagosPage';
+import EstadoCuentaPage from '../pages/EstadoCuentaPage';
 
 /**
  * Shell del sistema — sidebar negra, contenido blanco, rojo como acento.
@@ -153,6 +155,12 @@ export default function Shell({ user, activeItem, onItemClick }: Props) {
             <SociosPage />
           ) : activeItem === 'cuotas' ? (
             <CuotasPage />
+          ) : activeItem === 'pagos' ? (
+            <PagosPage />
+          ) : activeItem === 'morosidad' ? (
+            <EstadoCuentaPage />
+          ) : activeItem === 'estado' ? (
+            <EstadoCuentaPage />
           ) : (
             <div className="p-6">
               <h1 className="text-[21px] font-bold tracking-tight">Panel</h1>
