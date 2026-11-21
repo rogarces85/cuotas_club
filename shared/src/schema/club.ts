@@ -173,6 +173,7 @@ export const cuentaBancaria = mysqlTable('cuenta_bancaria', {
 export const categoriaEgreso = mysqlTable('categoria_egreso', {
   id: int('id', { unsigned: true }).autoincrement().primaryKey(),
   nombre: varchar('nombre', { length: 80 }).notNull(),
+  createdAt: int('created_at').notNull(),
 });
 
 export const egreso = mysqlTable(
@@ -197,6 +198,7 @@ export const gastoFijo = mysqlTable('gasto_fijo', {
   monto: int('monto').notNull(),
   periodicidad: varchar('periodicidad', { length: 30 }).notNull(),
   activo: tinyint('activo').notNull().default(1),
+  createdAt: int('created_at').notNull(),
 });
 
 export const otroIngreso = mysqlTable('otro_ingreso', {
@@ -271,4 +273,24 @@ export const egresoRelations = relations(egreso, ({ one }) => ({
     fields: [egreso.categoriaId],
     references: [categoriaEgreso.id],
   }),
+}));
+
+export const categoriaEgresoRelations = relations(categoriaEgreso, ({ many }) => ({
+  egresos: many(egreso),
+}));
+
+export const gastoFijoRelations = relations(gastoFijo, ({ many }) => ({
+  // sin relaciones por ahora
+}));
+
+export const otroIngresoRelations = relations(otroIngreso, ({ many }) => ({
+  // sin relaciones por ahora
+}));
+
+export const movimientoBancarioRelations = relations(movimientoBancario, ({ many }) => ({
+  // sin relaciones por ahora
+}));
+
+export const usuarioRolRelations = relations(usuarioRol, ({ many }) => ({
+  // sin relaciones por ahora
 }));

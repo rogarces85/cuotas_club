@@ -193,6 +193,155 @@ export const crearEgresoSchema = z.object({
   descripcion: z.string().trim().min(1).max(255),
 });
 
+/**
+ * Actualización de egreso: todos los campos opcionales, al menos uno requerido.
+ */
+export const actualizarEgresoSchema = z
+  .object({
+    categoriaId: z.number().int().positive().optional(),
+    fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    monto: montoClpSchema.optional(),
+    descripcion: z.string().trim().min(1).max(255).optional(),
+    boletaRuta: z.string().max(255).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
+
+/**
+ * Categoría de egreso.
+ */
+export const crearCategoriaEgresoSchema = z.object({
+  nombre: z.string().trim().min(1).max(80),
+});
+
+export const actualizarCategoriaEgresoSchema = z.object({
+  nombre: z.string().trim().min(1).max(80).optional(),
+}).refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
+
+/**
+ * Gasto fijo (recurrente).
+ */
+export const crearGastoFijoSchema = z.object({
+  descripcion: z.string().trim().min(1).max(160),
+  monto: montoClpSchema,
+  periodicidad: z.enum(['mensual', 'trimestral', 'semestral', 'anual']),
+});
+
+export const actualizarGastoFijoSchema = z.object({
+  descripcion: z.string().trim().min(1).max(160).optional(),
+  monto: montoClpSchema.optional(),
+  periodicidad: z.enum(['mensual', 'trimestral', 'semestral', 'anual']).optional(),
+  activo: z.boolean().optional(),
+}).refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
+
+/**
+ * Otro ingreso (rifas, donaciones, etc.).
+ */
+export const crearOtroIngresoSchema = z.object({
+  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  monto: montoClpSchema,
+  descripcion: z.string().trim().min(1).max(255),
+  origen: z.string().trim().max(60).optional(),
+});
+
+export const actualizarOtroIngresoSchema = z
+  .object({
+    fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    monto: montoClpSchema.optional(),
+    descripcion: z.string().trim().min(1).max(255).optional(),
+    origen: z.string().trim().max(60).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
+
+/**
+ * Configuración del club.
+ */
+export const actualizarConfigClubSchema = z.object({
+  nombre: z.string().trim().min(1).max(160).optional(),
+  logoUrl: z.string().url('URL de logo inválida').optional().or(z.literal('')),
+  direccion: z.string().trim().max(255).optional(),
+  telefono: z.string().trim().max(30).optional(),
+  email: z.string().email('Email inválido').optional().or(z.literal('')),
+  emailTesoreria: z.string().email('Email tesorería inválido').optional().or(z.literal('')),
+  metaMensual: montoClpSchema.optional(),
+}).refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
+
+/**
+ * Usuario/Rol.
+ */
+export const crearUsuarioRolSchema = z.object({
+  userId: z.string().uuid('userId debe ser UUID válido'),
+  rol: rolSchema,
+});
+
+export const actualizarUsuarioRolSchema = z.object({
+  rol: rolSchema.optional(),
+}).refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
+
+/**
+ * Importación de socios (CSV).
+ */
+export const importarSociosSchema = z.object({
+  socios: z.array(z.object({
+    rut: rutSchema,
+    nombre: nombreSchema,
+    anio: z.number().int().min(2020).max(2100),
+    sexo: z.string().trim().max(20).optional(),
+    estado: estadoSocioSchema.optional(),
+    email: z.string().email('Email inválido').optional().or(z.literal('')),
+    telefono: z.string().trim().max(30).optional(),
+    activo: z.boolean().optional(),
+  })).min(1, 'Debe haber al menos un socio'),
+});
+
+/**
+ * Query de reportes.
+ */
+export const reporteBalanceQuerySchema = z.object({
+  periodo: periodoSchema.optional(),
+  desde: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  hasta: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  formato: z.enum(['json', 'xlsx', 'pdf']).optional(),
+}).refine((v) => v.periodo || (v.desde && v.hasta), 'Debe especificar periodo o rango desde/hasta');
+
+/**
+ * Query de panel/KPIs.
+ */
+export const panelKpisQuerySchema = z.object({
+  mes: periodoSchema.optional(), // AAAA-MM, default mes actual
+});
+
+/**
+ * Query listado egresos.
+ */
+export const listarEgresosQuerySchema = z.object({
+  q: z.string().trim().max(160).optional(),
+  categoriaId: z.number().int().positive().optional(),
+  desde: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  hasta: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  pagina: z.coerce.number().int().min(1).default(1),
+  porPagina: z.coerce.number().int().min(1).max(100).default(25),
+});
+
+/**
+ * Query listado otros ingresos.
+ */
+export const listarOtrosIngresosQuerySchema = z.object({
+  q: z.string().trim().max(160).optional(),
+  desde: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  hasta: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  pagina: z.coerce.number().int().min(1).default(1),
+  porPagina: z.coerce.number().int().min(1).max(100).default(25),
+});
+
+/**
+ * Query listado gastos fijos.
+ */
+export const listarGastosFijosQuerySchema = z.object({
+  activo: z.enum(['0', '1']).optional().transform((v) => v === undefined ? undefined : v === '1'),
+  pagina: z.coerce.number().int().min(1).default(1),
+  porPagina: z.coerce.number().int().min(1).max(100).default(25),
+});
+
 export type CrearSocioInput = z.infer<typeof crearSocioSchema>;
 export type ActualizarSocioInput = z.infer<typeof actualizarSocioSchema>;
 export type ListarSociosQuery = z.infer<typeof listarSociosQuerySchema>;
@@ -203,3 +352,20 @@ export type CrearCuentaBancariaInput = z.infer<typeof crearCuentaBancariaSchema>
 export type CrearPeriodoCuotaInput = z.infer<typeof crearPeriodoCuotaSchema>;
 export type CrearComprobanteInput = z.infer<typeof crearComprobanteSchema>;
 export type ActualizarComprobanteInput = z.infer<typeof actualizarComprobanteSchema>;
+export type CrearEgresoInput = z.infer<typeof crearEgresoSchema>;
+export type ActualizarEgresoInput = z.infer<typeof actualizarEgresoSchema>;
+export type CrearCategoriaEgresoInput = z.infer<typeof crearCategoriaEgresoSchema>;
+export type ActualizarCategoriaEgresoInput = z.infer<typeof actualizarCategoriaEgresoSchema>;
+export type CrearGastoFijoInput = z.infer<typeof crearGastoFijoSchema>;
+export type ActualizarGastoFijoInput = z.infer<typeof actualizarGastoFijoSchema>;
+export type CrearOtroIngresoInput = z.infer<typeof crearOtroIngresoSchema>;
+export type ActualizarOtroIngresoInput = z.infer<typeof actualizarOtroIngresoSchema>;
+export type ActualizarConfigClubInput = z.infer<typeof actualizarConfigClubSchema>;
+export type CrearUsuarioRolInput = z.infer<typeof crearUsuarioRolSchema>;
+export type ActualizarUsuarioRolInput = z.infer<typeof actualizarUsuarioRolSchema>;
+export type ImportarSociosInput = z.infer<typeof importarSociosSchema>;
+export type ReporteBalanceQuery = z.infer<typeof reporteBalanceQuerySchema>;
+export type PanelKpisQuery = z.infer<typeof panelKpisQuerySchema>;
+export type ListarEgresosQuery = z.infer<typeof listarEgresosQuerySchema>;
+export type ListarOtrosIngresosQuery = z.infer<typeof listarOtrosIngresosQuerySchema>;
+export type ListarGastosFijosQuery = z.infer<typeof listarGastosFijosQuerySchema>;

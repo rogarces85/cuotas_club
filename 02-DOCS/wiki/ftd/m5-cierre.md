@@ -1,0 +1,81 @@
+---
+author: Rodrigo Garces
+branch: main
+status: in-progress
+---
+# M5 — Cierre (gastos, reportes, config, importación socios, panel)
+
+## Intent
+
+Cerrar el MVP del sistema de cuotas: módulo de gastos/egresos, reportes con exportación, configuración del club y usuarios/roles, importación definitiva de los 54 socios reales, y panel con KPIs. El criterio de aceptación es que el reporte del mes cuadra contra la cartola del club.
+
+## Scope
+
+**Adentro:**
+
+- **Gastos/Egresos**:
+  - CRUD categorías de egreso (`categoria_egreso`)
+  - CRUD egresos (`egreso`) con fecha, monto, descripción, categoría opcional, boleta adjunta (archivo)
+  - CRUD gastos fijos (`gasto_fijo`) — recurrentes mensuales
+  - CRUD otros ingresos (`otro_ingreso`) — rifas, donaciones, etc.
+  - Subida de boleta (multipart, validación MIME/tamaño/SHA256, similar a comprobantes)
+
+- **Reportes**:
+  - GET `/api/reportes/balance` — balance del período (ingresos por pagos aprobados, egresos, otros ingresos, saldo)
+  - GET `/api/reportes/balance?formato=xlsx` — exportar a Excel
+  - GET `/api/reportes/balance?formato=pdf` — exportar a PDF
+  - Parámetros: `periodo` (AAAA-MM) o `desde`/`hasta` (fechas)
+
+- **Configuración**:
+  - GET/PATCH `/api/config` — datos del club (nombre, logo, datos contacto, email tesorería)
+  - CRUD usuarios y roles (`usuario_rol`: DIRECTIVA, TESORERO, SOCIO)
+  - Endpoint para subir logo del club
+
+- **Importación socios**:
+  - POST `/api/importar/socios` — importar CSV/Excel con los 54 socios reales
+  - Validar RUT, normalizar, evitar duplicados
+  - Script `npm run db:import-socios` para correr en PC de casa
+
+- **Panel (Dashboard)**:
+  - GET `/api/panel/kpis` — 4 KPIs: recaudado mes, socios morosos, socios activos, comprobantes por revisar
+  - GET `/api/panel/recaudacion` — serie temporal para gráfico (últimos 6 meses)
+  - GET `/api/panel/ultimos-pagos` — últimos 5 pagos aprobados
+  - Meta del mes (configurable)
+
+**Afuera (explicitado):**
+
+- Multi-club — fuera de alcance
+- Landing page pública — fase 2
+- Integración contabilidad externa — fuera de alcance
+- App móvil nativa — fuera de alcance
+
+## Checklist
+
+- [ ] T1 — FTD document (este archivo)
+- [ ] T2 — API: gastos/egresos (categorías, egresos, gastos fijos, otros ingresos + boleta)
+- [ ] T3 — API: reportes (balance + export XLSX/PDF)
+- [ ] T4 — API: configuración (club, logo, usuarios/roles)
+- [ ] T5 — API: importación socios + script CLI
+- [ ] T6 — API: panel (KPIs, serie recaudación, últimos pagos)
+- [ ] T7 — Frontend: página Gastos
+- [ ] T8 — Frontend: página Reportes
+- [ ] T9 — Frontend: página Configuración
+- [ ] T10 — Frontend: Panel (KPIs + gráfico)
+- [ ] T11 — Script importación 54 socios + prueba en PC de casa
+- [ ] T12 — Prueba de aceptación E2E (reporte cuadra contra cartola)
+
+## Evidence
+
+(se va completando por tarea)
+
+## Decisiones técnicas
+
+- Archivos (boletas, logo): misma infraestructura que comprobantes → `api/uploads/boletas/<sha256>`, `api/uploads/logo/...`
+- Export Excel: `xlsx` (SheetJS); Export PDF: `pdfkit` o similar ligero
+- Roles: DIRECTIVA (todo), TESORERO (pagos, bancos, reportes, gastos), SOCIO (solo ver su estado de cuenta)
+- Importación socios: CSV con columnas `rut,nombre,anio,sexo,estado,email,telefono,activo`
+- Panel: datos derivados en vivo (sin tablas de agregados), caché corto (30s) para KPIs
+
+## Next
+
+T2 — API: crear rutas de gastos/egresos (CRUD categorías, egresos con boleta, gastos fijos, otros ingresos).

@@ -6,6 +6,7 @@ import { cuotas } from './cuotas/routes.js';
 import { pagos } from './pagos/routes.js';
 import { upload } from './upload/routes.js';
 import { bancos } from './bancos/routes.js';
+import { gastos } from './gastos/routes.js';
 
 const app = new Hono();
 
@@ -44,5 +45,6 @@ app.route('/api/cuotas', cuotas);
 app.route('/api/pagos', pagos);
 app.route('/api/upload', upload);
 app.route('/api/bancos', bancos);
+app.route('/api/gastos', gastos);
 
 export default app;
