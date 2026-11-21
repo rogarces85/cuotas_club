@@ -4,6 +4,7 @@ import { auth } from './auth.js';
 import { socios } from './socios/routes.js';
 import { cuotas } from './cuotas/routes.js';
 import { pagos } from './pagos/routes.js';
+import { upload } from './upload/routes.js';
 
 const app = new Hono();
 
@@ -40,5 +41,6 @@ app.all('/api/auth/*', (c) => auth.handler(c.req.raw));
 app.route('/api/socios', socios);
 app.route('/api/cuotas', cuotas);
 app.route('/api/pagos', pagos);
+app.route('/api/upload', upload);
 
 export default app;

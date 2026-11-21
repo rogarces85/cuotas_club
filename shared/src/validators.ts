@@ -168,6 +168,24 @@ export const crearPeriodoCuotaSchema = z.object({
   diaVencimiento: diaVencimientoSchema,
 });
 
+/**
+ * Comprobante de pago: validación de archivo subido.
+ * El servidor valida MIME y tamaño; aquí solo definimos la estructura del DTO.
+ */
+export const crearComprobanteSchema = z.object({
+  pagoId: z.number().int().positive(),
+  nombreArchivo: z.string().trim().min(1).max(255),
+  mime: z.string().trim().min(1).max(100),
+  bytes: z.number().int().positive(),
+  sha256: z.string().length(64, 'SHA256 debe tener 64 caracteres hex'),
+});
+
+export const actualizarComprobanteSchema = z
+  .object({
+    estado: z.enum(['PENDIENTE', 'APROBADO', 'RECHAZADO']).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
+
 export const crearEgresoSchema = z.object({
   categoriaId: z.number().int().positive().optional(),
   fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -183,3 +201,5 @@ export type ListarPagosQuery = z.infer<typeof listarPagosQuerySchema>;
 export type ActualizarPagoInput = z.infer<typeof actualizarPagoSchema>;
 export type CrearCuentaBancariaInput = z.infer<typeof crearCuentaBancariaSchema>;
 export type CrearPeriodoCuotaInput = z.infer<typeof crearPeriodoCuotaSchema>;
+export type CrearComprobanteInput = z.infer<typeof crearComprobanteSchema>;
+export type ActualizarComprobanteInput = z.infer<typeof actualizarComprobanteSchema>;

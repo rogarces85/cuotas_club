@@ -90,6 +90,7 @@ export async function obtenerPago(id: number) {
     .select({
       id: comprobante.id,
       ruta: comprobante.ruta,
+      nombreArchivo: comprobante.nombreArchivo,
       mime: comprobante.mime,
       bytes: comprobante.bytes,
       sha256: comprobante.sha256,
@@ -100,6 +101,64 @@ export async function obtenerPago(id: number) {
     .where(eq(comprobante.pagoId, id));
 
   return { ...fila, comprobantes: comps };
+}
+
+// ---------------------------------------------------------------------------
+// Comprobantes
+// ---------------------------------------------------------------------------
+
+export async function crearComprobante(input: {
+  pagoId: number;
+  nombreArchivo: string;
+  mime: string;
+  bytes: number;
+  sha256: string;
+  ruta: string;
+}) {
+  const ts = nowSec();
+  const [result] = await db
+    .insert(comprobante)
+    .values({
+      pagoId: input.pagoId,
+      ruta: input.ruta,
+      nombreArchivo: input.nombreArchivo,
+      mime: input.mime,
+      bytes: input.bytes,
+      sha256: input.sha256,
+      estado: 'PENDIENTE',
+      createdAt: ts,
+    });
+
+  return obtenerComprobante(Number(result.insertId));
+}
+
+export async function obtenerComprobante(id: number) {
+  const [fila] = await db
+    .select()
+    .from(comprobante)
+    .where(eq(comprobante.id, id))
+    .limit(1);
+
+  return fila ?? null;
+}
+
+export async function obtenerComprobantePorPago(pagoId: number) {
+  const [fila] = await db
+    .select()
+    .from(comprobante)
+    .where(eq(comprobante.pagoId, pagoId))
+    .limit(1);
+
+  return fila ?? null;
+}
+
+export async function actualizarComprobante(id: number, estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO') {
+  await db
+    .update(comprobante)
+    .set({ estado })
+    .where(eq(comprobante.id, id));
+
+  return obtenerComprobante(id);
 }
 
 export async function crearPago(input: CrearPagoInput) {

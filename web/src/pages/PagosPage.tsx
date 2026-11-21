@@ -6,6 +6,9 @@ import {
   obtenerPago,
   aprobarPago,
   rechazarPago,
+  subirComprobante,
+  registrarComprobante,
+  urlComprobante,
   ApiError,
   type Pago,
   type PagoInput,
@@ -178,7 +181,7 @@ export default function PagosPage() {
               </tr>
             </thead>
             <tbody>
-              {data?.filas.map((p) => (
+              {data?.filas.map((p: Pago) => (
                 <tr key={p.id} className="border-b border-border last:border-0 hover:bg-secondary/40">
                   <td className="px-4 py-3 font-mono text-[12.5px]">{formatFecha(p.fechaPago)}</td>
                   <td className="px-4 py-3 font-mono text-[12.5px]">{p.rut}</td>
@@ -511,6 +514,9 @@ type DetallePagoProps = {
 function DetallePago({ pago, onAprobar, onRechazar, onClose, aprobando, rechazando }: DetallePagoProps) {
   const [motivoRechazo, setMotivoRechazo] = useState('');
   const [mostrarRechazo, setMostrarRechazo] = useState(false);
+  const [subiendo, setSubiendo] = useState(false);
+  const [subidaError, setSubidaError] = useState<string | null>(null);
+  const [visorAbierto, setVisorAbierto] = useState<{ url: string; mime: string; nombre: string } | null>(null);
 
   const handleAprobar = () => {
     if (onAprobar) onAprobar();
@@ -518,6 +524,63 @@ function DetallePago({ pago, onAprobar, onRechazar, onClose, aprobando, rechazan
 
   const handleRechazar = () => {
     if (onRechazar) onRechazar(motivoRechazo);
+  };
+
+  const comprobante = pago.comprobantes?.[0];
+  const tieneComprobante = !!comprobante;
+  const puedeSubir = pago.estado === 'PENDIENTE' && !tieneComprobante;
+
+  const handleSubirArchivo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+
+    // Validar tipo en cliente antes de subir
+    const mimesPermitidos = ['application/pdf', 'image/png', 'image/jpeg'];
+    if (!mimesPermitidos.includes(archivo.type)) {
+      setSubidaError('Tipo de archivo no permitido. Use PDF, PNG o JPEG.');
+      return;
+    }
+    if (archivo.size > 5 * 1024 * 1024) {
+      setSubidaError('Archivo muy grande (máx 5 MB).');
+      return;
+    }
+
+    setSubiendo(true);
+    setSubidaError(null);
+
+    try {
+      // 1. Subir archivo a /api/upload/comprobante
+      const uploadResult = await subirComprobante(archivo);
+
+      // 2. Registrar metadatos en /api/pagos/:id/comprobante
+      await registrarComprobante({
+        pagoId: pago.id,
+        nombreArchivo: uploadResult.nombreArchivo,
+        mime: uploadResult.mime,
+        bytes: uploadResult.bytes,
+        sha256: uploadResult.sha256,
+      });
+
+      // 3. Invalidar queries para recargar el detalle
+      // El modal se cerrará y se volverá a abrir con datos frescos
+      onClose();
+    } catch (err) {
+      setSubidaError(err instanceof ApiError ? err.message : 'Error al subir el comprobante');
+    } finally {
+      setSubiendo(false);
+      // Reset input
+      e.target.value = '';
+    }
+  };
+
+  const abrirVisor = () => {
+    if (comprobante) {
+      setVisorAbierto({
+        url: urlComprobante(comprobante.sha256),
+        mime: comprobante.mime,
+        nombre: comprobante.nombreArchivo,
+      });
+    }
   };
 
   return (
@@ -573,20 +636,64 @@ function DetallePago({ pago, onAprobar, onRechazar, onClose, aprobando, rechazan
         </div>
       </div>
 
-      {/* Comprobantes */}
-      {pago.comprobantes && pago.comprobantes.length > 0 && (
-        <div className="mb-5 p-3 bg-secondary/30 rounded-lg">
-          <h3 className="text-[13px] font-semibold mb-2">Comprobantes</h3>
-          <div className="space-y-2">
-            {pago.comprobantes.map((c) => (
-              <div key={c.id} className="flex items-center justify-between text-[12.5px] py-1 border-b border-border last:border-0">
-                <span className="font-mono text-muted-foreground">{c.ruta}</span>
-                <Badge value={c.estado} />
-              </div>
-            ))}
-          </div>
+      {/* Comprobante */}
+      <div className="mb-5 p-3 bg-secondary/30 rounded-lg">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-[13px] font-semibold">Comprobante</h3>
+          {puedeSubir && (
+            <label className="bg-primary text-primary-foreground rounded-lg px-3 py-1.5 text-[12px] font-medium cursor-pointer hover:opacity-90">
+              Subir comprobante
+              <input
+                type="file"
+                accept="application/pdf,image/png,image/jpeg"
+                onChange={handleSubirArchivo}
+                disabled={subiendo}
+                className="hidden"
+              />
+            </label>
+          )}
         </div>
-      )}
+
+        {subidaError && (
+          <div className="mb-3 p-2 bg-destructive/10 border border-destructive/30 rounded-lg text-[12.5px] text-destructive">
+            {subidaError}
+          </div>
+        )}
+
+        {subiendo && (
+          <div className="flex items-center gap-2 text-[12.5px] text-muted-foreground">
+            <div className="w-4 h-4 border-2 border-border border-t-primary rounded-full animate-spin" />
+            Subiendo comprobante…
+          </div>
+        )}
+
+        {tieneComprobante && comprobante && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 p-2 bg-background rounded-lg border border-border">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-[13px] truncate">{comprobante.nombreArchivo}</p>
+                <p className="text-[11.5px] text-muted-foreground font-mono">
+                  {comprobante.mime} · {comprobante.bytes.toLocaleString()} bytes · SHA256: {comprobante.sha256.slice(0, 16)}…
+                </p>
+              </div>
+              <Badge value={comprobante.estado} />
+              <button
+                onClick={abrirVisor}
+                disabled={comprobante.mime !== 'application/pdf' && !comprobante.mime.startsWith('image/')}
+                className="text-[12px] font-medium text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {comprobante.mime === 'application/pdf' ? 'Ver PDF' : 'Ver imagen'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {puedeSubir && !subiendo && !tieneComprobante && (
+          <p className="text-[12.5px] text-muted-foreground text-center py-2">
+            No hay comprobante subido. Use el botón «Subir comprobante» para adjuntar el comprobante de transferencia.
+          </p>
+        )}
+      </div>
 
       {/* Acciones según estado */}
       <div className="flex items-center gap-3 pt-4 border-t border-border">
@@ -594,8 +701,9 @@ function DetallePago({ pago, onAprobar, onRechazar, onClose, aprobando, rechazan
           <>
             <button
               onClick={handleAprobar}
-              disabled={aprobando}
+              disabled={aprobando || !tieneComprobante}
               className="bg-success text-success-foreground rounded-lg px-5 py-2.5 text-[13.5px] font-semibold disabled:opacity-50"
+              title={!tieneComprobante ? 'Suba un comprobante antes de aprobar' : ''}
             >
               {aprobando ? 'Aprobando…' : 'Aprobar'}
             </button>
@@ -642,6 +750,33 @@ function DetallePago({ pago, onAprobar, onRechazar, onClose, aprobando, rechazan
               >
                 {rechazando ? 'Rechazando…' : 'Confirmar rechazo'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Visor de comprobante (PDF/imagen) */}
+      {visorAbierto && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={() => setVisorAbierto(null)}>
+          <div className="w-full max-w-[900px] max-h-[90vh] bg-card border border-border rounded-[12px] shadow-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-3 border-b border-border">
+              <h4 className="text-[14px] font-semibold truncate pr-4">{visorAbierto.nombre}</h4>
+              <button onClick={() => setVisorAbierto(null)} className="text-muted-foreground hover:text-foreground p-1">✕</button>
+            </div>
+            <div className="p-4 overflow-auto max-h-[calc(90vh-100px)]">
+              {visorAbierto.mime === 'application/pdf' ? (
+                <iframe
+                  src={visorAbierto.url}
+                  className="w-full h-[70vh] border-0"
+                  title={visorAbierto.nombre}
+                />
+              ) : (
+                <img
+                  src={visorAbierto.url}
+                  alt={visorAbierto.nombre}
+                  className="max-w-full max-h-[70vh] object-contain"
+                />
+              )}
             </div>
           </div>
         </div>

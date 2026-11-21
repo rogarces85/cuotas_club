@@ -7,6 +7,8 @@ import {
   listarPagosQuerySchema,
   crearPagoSchema,
   actualizarPagoSchema,
+  crearComprobanteSchema,
+  actualizarComprobanteSchema,
 } from '@cuotas-club/shared';
 import { requireSession } from '../middleware/auth.js';
 import {
@@ -16,6 +18,10 @@ import {
   aprobarPago,
   rechazarPago,
   listarMorosos,
+  crearComprobante,
+  obtenerComprobante,
+  obtenerComprobantePorPago,
+  actualizarComprobante,
 } from './repo.js';
 
 const pago = clubSchema.pago;
@@ -115,3 +121,61 @@ async function obtenerPagoPorRutYAnio(rut: string, anio: number) {
     .limit(1);
   return fila ?? null;
 }
+
+// ---------------------------------------------------------------------------
+// Comprobantes
+// ---------------------------------------------------------------------------
+
+// POST /api/pagos/:id/comprobante — subir comprobante (JSON con metadatos; archivo va a /api/upload)
+pagos.post('/:id/comprobante', zValidator('json', crearComprobanteSchema), async (c) => {
+  const id = Number(c.req.param('id'));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({ error: 'Id de pago inválido' }, 400);
+  }
+
+  const pagoExistente = await obtenerPago(id);
+  if (!pagoExistente) return c.json({ error: 'Pago no encontrado' }, 404);
+
+  const input = c.req.valid('json');
+  // Construir ruta desde SHA256 y MIME (coincide con upload/routes.ts)
+  const ext = input.mime === 'application/pdf' ? '.pdf' : input.mime === 'image/png' ? '.png' : '.jpg';
+  const ruta = `comprobantes/${input.sha256}${ext}`;
+
+  const comp = await crearComprobante({
+    pagoId: id,
+    nombreArchivo: input.nombreArchivo,
+    mime: input.mime,
+    bytes: input.bytes,
+    sha256: input.sha256,
+    ruta,
+  });
+
+  return c.json(comp, 201);
+});
+
+// GET /api/pagos/:id/comprobante — obtener comprobante del pago
+pagos.get('/:id/comprobante', async (c) => {
+  const id = Number(c.req.param('id'));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({ error: 'Id de pago inválido' }, 400);
+  }
+
+  const comp = await obtenerComprobantePorPago(id);
+  if (!comp) return c.json({ error: 'Comprobante no encontrado' }, 404);
+
+  return c.json(comp);
+});
+
+// PATCH /api/comprobantes/:id — actualizar estado del comprobante
+pagos.patch('/comprobantes/:id', zValidator('json', actualizarComprobanteSchema), async (c) => {
+  const id = Number(c.req.param('id'));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({ error: 'Id de comprobante inválido' }, 400);
+  }
+
+  const { estado } = c.req.valid('json');
+  const comp = await actualizarComprobante(id, estado!);
+  if (!comp) return c.json({ error: 'Comprobante no encontrado' }, 404);
+
+  return c.json(comp);
+});

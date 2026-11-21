@@ -158,6 +158,7 @@ export type Comprobante = {
   id: number;
   pagoId: number;
   ruta: string;
+  nombreArchivo: string;
   mime: string;
   bytes: number;
   sha256: string;
@@ -259,4 +260,72 @@ export function rechazarPago(id: number, motivo?: string): Promise<Pago> {
 
 export function listarMorosos(): Promise<Moroso[]> {
   return request<Moroso[]>('/pagos/morosos');
+}
+
+// ---------------------------------------------------------------------------
+// Comprobantes (M4)
+// ---------------------------------------------------------------------------
+
+export type ComprobanteUploadResult = {
+  ruta: string;
+  nombreArchivo: string;
+  mime: string;
+  bytes: number;
+  sha256: string;
+};
+
+export type ComprobanteInput = {
+  pagoId: number;
+  nombreArchivo: string;
+  mime: string;
+  bytes: number;
+  sha256: string;
+};
+
+export type ComprobanteEstado = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+
+export async function subirComprobante(archivo: File): Promise<ComprobanteUploadResult> {
+  const formData = new FormData();
+  formData.append('archivo', archivo);
+
+  const res = await fetch(`${BASE}/upload/comprobante`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let message = `Error ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) message = body.error;
+    } catch {
+      // sin cuerpo JSON
+    }
+    throw new ApiError(res.status, message);
+  }
+
+  return (await res.json()) as ComprobanteUploadResult;
+}
+
+export function registrarComprobante(input: ComprobanteInput): Promise<Comprobante> {
+  return request<Comprobante>(`/pagos/${input.pagoId}/comprobante`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function obtenerComprobantePago(pagoId: number): Promise<Comprobante> {
+  return request<Comprobante>(`/pagos/${pagoId}/comprobante`);
+}
+
+export function actualizarComprobante(id: number, estado: ComprobanteEstado): Promise<Comprobante> {
+  return request<Comprobante>(`/pagos/comprobantes/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ estado }),
+  });
+}
+
+export function urlComprobante(sha256: string): string {
+  return `${BASE}/upload/comprobante/${sha256}`;
 }

@@ -143,6 +143,7 @@ export const comprobante = mysqlTable('comprobante', {
   id: int('id', { unsigned: true }).autoincrement().primaryKey(),
   pagoId: int('id_pago', { unsigned: true }).notNull(),
   ruta: varchar('ruta', { length: 255 }).notNull(),
+  nombreArchivo: varchar('nombre_archivo', { length: 255 }).notNull(),
   mime: varchar('mime', { length: 100 }).notNull(),
   bytes: int('bytes', { unsigned: true }).notNull(),
   sha256: varchar('sha256', { length: 64 }).notNull(),
