@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listarSocios, crearSocio, actualizarSocio, desactivarSocio, ApiError, type Socio } from '../lib/api';
+import {
+  listarSocios,
+  crearSocio,
+  actualizarSocio,
+  desactivarSocio,
+  obtenerFichaSocio,
+  ApiError,
+  type Socio,
+} from '../lib/api';
 import SocioForm, { type SocioFormValues } from '../components/SocioForm';
 
 /**
@@ -43,6 +51,7 @@ export default function SociosPage() {
   const [estadoFiltro, setEstadoFiltro] = useState('');
   const [pagina, setPagina] = useState(1);
   const [modal, setModal] = useState<ModalState>(null);
+  const [fichaSocioId, setFichaSocioId] = useState<number | null>(null);
 
   const filtros = {
     q: busqueda.trim() || undefined,
@@ -171,6 +180,12 @@ export default function SociosPage() {
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
                       <button
+                        onClick={() => setFichaSocioId(s.id)}
+                        className="text-[12px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-1"
+                      >
+                        Ficha
+                      </button>
+                      <button
                         onClick={() => setModal({ modo: 'editar', socio: s })}
                         className="text-[12px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-1"
                       >
@@ -286,6 +301,119 @@ export default function SociosPage() {
           </div>
         </div>
       )}
+
+      {fichaSocioId !== null && (
+        <FichaSocioModal socioId={fichaSocioId} onClose={() => setFichaSocioId(null)} />
+      )}
+    </div>
+  );
+}
+
+function formatClp(n: number) {
+  return `$${n.toLocaleString('es-CL')}`;
+}
+
+function formatFecha(iso: string) {
+  const [a, m, d] = iso.slice(0, 10).split('-');
+  return `${d}-${m}-${a}`;
+}
+
+function FichaSocioModal({ socioId, onClose }: { socioId: number; onClose: () => void }) {
+  const { data, isPending, isError } = useQuery({
+    queryKey: ['ficha-socio', socioId],
+    queryFn: () => obtenerFichaSocio(socioId),
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-[820px] max-h-[90vh] overflow-y-auto bg-card border border-border rounded-[12px] p-6 shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {isPending ? (
+          <p className="text-[13px] text-muted-foreground py-6 text-center">Cargando ficha…</p>
+        ) : isError || !data ? (
+          <p className="text-[13px] text-primary py-6 text-center">No se pudo cargar la ficha.</p>
+        ) : (
+          <>
+            <div className="flex items-start justify-between mb-5">
+              <div>
+                <h2 className="text-[18px] font-bold tracking-tight">{data.socio.nombre}</h2>
+                <p className="text-[12.5px] text-muted-foreground font-mono mt-0.5">
+                  {formatRut(data.socio.rut)} · {data.socio.estado} · {data.socio.anio}
+                </p>
+              </div>
+              <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">✕</button>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-3 mb-5">
+              <div className="p-3 bg-secondary/30 rounded-lg">
+                <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Períodos pendientes</div>
+                <div className="text-[20px] font-bold font-mono">{data.deuda?.totalDeuda ?? 0}</div>
+              </div>
+              <div className="p-3 bg-secondary/30 rounded-lg">
+                <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Pagos registrados</div>
+                <div className="text-[20px] font-bold font-mono">{data.pagos.length}</div>
+              </div>
+              <div className="p-3 bg-secondary/30 rounded-lg">
+                <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Estado</div>
+                <div className="text-[13px] font-semibold mt-1">
+                  {data.socio.activo === 1 ? 'Activo' : 'Inactivo'}
+                </div>
+              </div>
+            </div>
+
+            {data.deuda && data.deuda.periodos.length > 0 && (
+              <div className="mb-5">
+                <h3 className="text-[13.5px] font-semibold mb-2">Períodos adeudados</h3>
+                <div className="flex flex-wrap gap-2">
+                  {data.deuda.periodos.map((p) => (
+                    <span key={p.periodo} className="px-2 py-1 rounded-md bg-warning/10 text-warning text-[12px] font-mono font-semibold">
+                      {p.periodo}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <h3 className="text-[13.5px] font-semibold mb-2">Historial de pagos</h3>
+              {data.pagos.length === 0 ? (
+                <p className="text-[13px] text-muted-foreground py-3">Sin pagos registrados.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[12.5px]">
+                    <thead>
+                      <tr className="text-left text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground border-b border-border">
+                        <th className="px-3 py-2 font-semibold">Fecha</th>
+                        <th className="px-3 py-2 font-semibold">Año</th>
+                        <th className="px-3 py-2 font-semibold">Tipo</th>
+                        <th className="px-3 py-2 font-semibold">Meses</th>
+                        <th className="px-3 py-2 font-semibold">Estado</th>
+                        <th className="px-3 py-2 font-semibold text-right">Monto</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.pagos.map((p) => (
+                        <tr key={p.id} className="border-b border-border last:border-0">
+                          <td className="px-3 py-2 font-mono">{formatFecha(p.fechaPago)}</td>
+                          <td className="px-3 py-2">{p.anio}</td>
+                          <td className="px-3 py-2">{p.tipoCuota}</td>
+                          <td className="px-3 py-2">{p.mesesDetalle ?? p.mesesCantidad}</td>
+                          <td className="px-3 py-2">
+                            <Badge value={p.estado} />
+                          </td>
+                          <td className="px-3 py-2 text-right font-mono">{formatClp(p.totalPago)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

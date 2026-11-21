@@ -6,6 +6,7 @@ import {
   listarSociosQuerySchema,
 } from '@cuotas-club/shared';
 import { requireSession } from '../middleware/auth.js';
+import { listarPagos, deudaSocio } from '../pagos/repo.js';
 import {
   listarSocios,
   obtenerSocio,
@@ -40,6 +41,28 @@ socios.get('/:id', async (c) => {
   const socio = await obtenerSocio(id);
   if (!socio) return c.json({ error: 'Socio no encontrado' }, 404);
   return c.json(socio);
+});
+
+// GET /api/socios/:id/ficha — ficha completa: datos, pagos y deuda derivada.
+socios.get('/:id/ficha', async (c) => {
+  const id = Number(c.req.param('id'));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({ error: 'Id de socio inválido' }, 400);
+  }
+
+  const socio = await obtenerSocio(id);
+  if (!socio) return c.json({ error: 'Socio no encontrado' }, 404);
+
+  const [pagos, deuda] = await Promise.all([
+    listarPagos({ socioId: id, pagina: 1, porPagina: 50 }),
+    deudaSocio(id),
+  ]);
+
+  return c.json({
+    socio,
+    pagos: pagos.filas,
+    deuda,
+  });
 });
 
 // POST /api/socios — alta.

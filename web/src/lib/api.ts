@@ -151,6 +151,48 @@ export function obtenerDeuda(periodoId: number): Promise<Deuda> {
 }
 
 // ---------------------------------------------------------------------------
+// Niveles de cuota (cuánto paga cada tipo)
+// ---------------------------------------------------------------------------
+
+export type NivelCuota = {
+  id: number;
+  codigo: string;
+  nombre: string;
+  montoClp: number;
+  tipo: 'ACTIVO' | 'MEMBRESIA' | 'BECADO' | 'OTRO';
+  activo: number;
+};
+
+export type NivelCuotaInput = {
+  codigo: string;
+  nombre: string;
+  montoClp: number;
+  tipo: 'ACTIVO' | 'MEMBRESIA' | 'BECADO' | 'OTRO';
+};
+
+export function listarNivelesCuota(): Promise<NivelCuota[]> {
+  return request<NivelCuota[]>('/cuotas/niveles');
+}
+
+export function crearNivelCuota(input: NivelCuotaInput): Promise<NivelCuota> {
+  return request<NivelCuota>('/cuotas/niveles', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function actualizarNivelCuota(
+  id: number,
+  input: Partial<NivelCuotaInput> & { activo?: boolean },
+): Promise<NivelCuota> {
+  return request<NivelCuota>(`/cuotas/niveles/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function eliminarNivelCuota(id: number): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>(`/cuotas/niveles/${id}`, { method: 'DELETE' });
+}
+
+// ---------------------------------------------------------------------------
 // Pagos (M3)
 // ---------------------------------------------------------------------------
 
@@ -381,18 +423,34 @@ export function listarCuentasBancarias(): Promise<CuentaBancaria[]> {
   return request<CuentaBancaria[]>('/bancos/cuentas');
 }
 
-export function crearCuentaBancaria(input: {
+export type CuentaBancariaInput = {
   banco: string;
   tipo: string;
   numero: string;
   titular: string;
   rut: string;
   email?: string;
-}): Promise<CuentaBancaria> {
+};
+
+export function crearCuentaBancaria(input: CuentaBancariaInput): Promise<CuentaBancaria> {
   return request<CuentaBancaria>('/bancos/cuentas', {
     method: 'POST',
     body: JSON.stringify(input),
   });
+}
+
+export function actualizarCuentaBancaria(
+  id: number,
+  input: Partial<CuentaBancariaInput>,
+): Promise<CuentaBancaria> {
+  return request<CuentaBancaria>(`/bancos/cuentas/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function eliminarCuentaBancaria(id: number): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>(`/bancos/cuentas/${id}`, { method: 'DELETE' });
 }
 
 export function listarMovimientosBancarios(params: {
@@ -829,4 +887,26 @@ export function obtenerResumenPanel(mes?: string): Promise<PanelResumen> {
   if (mes) qs.set('mes', mes);
   const query = qs.toString();
   return request<PanelResumen>(`/panel/resumen${query ? `?${query}` : ''}`);
+}
+
+// ---------------------------------------------------------------------------
+// Ficha de socio (datos + pagos + deuda derivada)
+// ---------------------------------------------------------------------------
+
+export type FichaSocio = {
+  socio: Socio;
+  pagos: Pago[];
+  deuda: {
+    socioId: number;
+    rut: string;
+    nombre: string;
+    estado: string;
+    activo: number;
+    totalDeuda: number;
+    periodos: { periodo: string; diaVencimiento: number }[];
+  } | null;
+};
+
+export function obtenerFichaSocio(id: number): Promise<FichaSocio> {
+  return request<FichaSocio>(`/socios/${id}/ficha`);
 }

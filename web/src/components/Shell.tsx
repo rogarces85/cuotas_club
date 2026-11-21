@@ -7,6 +7,7 @@ import BancosPage from '../pages/BancosPage';
 import ReportesPage from '../pages/ReportesPage';
 import ConfiguracionPage from '../pages/ConfiguracionPage';
 import PanelPage from '../pages/PanelPage';
+import CuentasBancariasPage from '../pages/CuentasBancariasPage';
 
 /**
  * Shell del sistema — sidebar negra, contenido blanco, rojo como acento.
@@ -49,10 +50,7 @@ const groups: { label: string; items: NavItem[] }[] = [
   },
   {
     label: 'Sistema',
-    items: [
-      { key: 'config', label: 'Configuración' },
-      { key: 'usuarios', label: 'Usuarios' },
-    ],
+    items: [{ key: 'config', label: 'Configuración' }],
   },
 ];
 
@@ -158,6 +156,8 @@ export default function Shell({ user, activeItem, onItemClick }: Props) {
         <main className="flex-1 p-6 max-w-[1500px] w-full overflow-y-auto">
           {activeItem === 'socios' ? (
             <SociosPage />
+          ) : activeItem === 'cuentas' ? (
+            <CuentasBancariasPage />
           ) : activeItem === 'cuotas' ? (
             <CuotasPage />
           ) : activeItem === 'pagos' ? (

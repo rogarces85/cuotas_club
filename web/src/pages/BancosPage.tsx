@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  listarCuentasBancarias,
-  crearCuentaBancaria,
   listarMovimientosBancarios,
   importarCartola,
   conciliarMovimientos,
@@ -11,8 +9,8 @@ import {
 } from '../lib/api';
 
 /**
- * Página Bancos (M4): CRUD de cuentas bancarias, importación de cartola
- * y conciliación de movimientos con pagos pendientes.
+ * Página Bancos (M4): cartola bancaria y conciliación de movimientos con
+ * pagos pendientes. El CRUD de cuentas vive en CuentasBancariasPage.
  */
 
 const formatClp = (n: number) => `$${n.toLocaleString('es-CL')}`;
@@ -35,38 +33,21 @@ function Badge({ value, color = 'secondary' }: { value: string; color?: string }
   );
 }
 
-type CuentaModalState = { modo: 'crear' } | null;
 type ImportarModalState = { abierto: boolean } | null;
 type ConciliarModalState = { abierto: boolean; sugerencias: ConciliacionSugerencia[] } | null;
 
 export default function BancosPage() {
   const queryClient = useQueryClient();
-  const [cuentaModal, setCuentaModal] = useState<CuentaModalState>(null);
   const [importarModal, setImportarModal] = useState<ImportarModalState>(null);
   const [conciliarModal, setConciliarModal] = useState<ConciliarModalState>(null);
   const [paginaMov, setPaginaMov] = useState(1);
   const [archivoCartola, setArchivoCartola] = useState<File | null>(null);
   const [importarError, setImportarError] = useState<string | null>(null);
 
-  // Cuentas bancarias
-  const { data: cuentas, isPending: cuentasPending } = useQuery({
-    queryKey: ['cuentas-bancarias'],
-    queryFn: listarCuentasBancarias,
-  });
-
   // Movimientos bancarios
   const { data: movData, isPending: movPending, isError: movError } = useQuery({
     queryKey: ['movimientos-bancarios', paginaMov],
     queryFn: () => listarMovimientosBancarios({ pagina: paginaMov, porPagina: 50 }),
-  });
-
-  const crearCuenta = useMutation({
-    mutationFn: (v: { banco: string; tipo: string; numero: string; titular: string; rut: string; email?: string }) =>
-      crearCuentaBancaria(v),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cuentas-bancarias'] });
-      setCuentaModal(null);
-    },
   });
 
   const importar = useMutation({
@@ -96,16 +77,10 @@ export default function BancosPage() {
         <div>
           <h1 className="text-[21px] font-bold tracking-tight">Bancos</h1>
           <p className="text-[13px] text-muted-foreground mt-[3px]">
-            Cuentas del club, cartola y conciliación
+            Cartola bancaria y conciliación con pagos
           </p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => setCuentaModal({ modo: 'crear' })}
-            className="bg-primary text-primary-foreground rounded-lg px-[14px] py-[9px] text-[13px] font-semibold"
-          >
-            Nueva cuenta
-          </button>
           <button
             onClick={() => setImportarModal({ abierto: true })}
             className="bg-secondary text-secondary-foreground rounded-lg px-[14px] py-[9px] text-[13px] font-semibold border border-border"
@@ -120,41 +95,6 @@ export default function BancosPage() {
             {conciliar.isPending ? 'Conciliando…' : 'Conciliar'}
           </button>
         </div>
-      </div>
-
-      {/* Cuentas bancarias */}
-      <div className="bg-card border border-border rounded-[10px] overflow-hidden mb-5">
-        <div className="px-4 py-3 border-b border-border">
-          <h2 className="text-[14px] font-semibold">Cuentas bancarias del club</h2>
-        </div>
-        {cuentasPending ? (
-          <div className="p-8 text-center text-[13px] text-muted-foreground">Cargando cuentas…</div>
-        ) : cuentas && cuentas.length === 0 ? (
-          <div className="p-8 text-center text-[13px] text-muted-foreground">
-            No hay cuentas bancarias configuradas. Use «Nueva cuenta» para agregar una.
-          </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {cuentas?.map((c) => (
-              <div key={c.id} className="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 grid place-items-center text-[14px] font-bold text-primary">
-                    {c.banco.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="font-medium text-[13px]">{c.banco}</div>
-                    <div className="text-[11.5px] text-muted-foreground font-mono">
-                      {c.tipo} · {c.numero} · Titular: {c.titular}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                  <Badge value="Activa" color="success" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Movimientos bancarios */}
@@ -227,25 +167,6 @@ export default function BancosPage() {
           </div>
         )}
       </div>
-
-      {/* Modal Nueva cuenta */}
-      {cuentaModal && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setCuentaModal(null)}>
-          <div className="w-full max-w-[560px] bg-card border border-border rounded-[12px] p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-[17px] font-bold tracking-tight mb-5">Nueva cuenta bancaria</h2>
-            {crearCuenta.error instanceof ApiError && (
-              <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-[12.5px] text-destructive">
-                {crearCuenta.error.message}
-              </div>
-            )}
-            <CuentaForm
-              submitLabel={crearCuenta.isPending ? 'Creando…' : 'Crear cuenta'}
-              onCancel={() => setCuentaModal(null)}
-              onSubmit={async (v) => await crearCuenta.mutateAsync(v)}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Modal Importar cartola */}
       {importarModal && (
@@ -360,106 +281,6 @@ export default function BancosPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-type CuentaFormProps = {
-  submitLabel: string;
-  onCancel: () => void;
-  onSubmit: (v: { banco: string; tipo: string; numero: string; titular: string; rut: string; email?: string }) => Promise<unknown>;
-};
-
-function CuentaForm({ submitLabel, onCancel, onSubmit }: CuentaFormProps) {
-  const [banco, setBanco] = useState('');
-  const [tipo, setTipo] = useState('corriente');
-  const [numero, setNumero] = useState('');
-  const [titular, setTitular] = useState('');
-  const [rut, setRut] = useState('');
-  const [email, setEmail] = useState('');
-
-  const valido = banco.trim() && numero.trim() && titular.trim() && rut.trim();
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <div className="md:col-span-2">
-        <label htmlFor="banco" className="block text-[12px] font-semibold mb-1.5">Banco</label>
-        <input
-          id="banco"
-          value={banco}
-          onChange={(e) => setBanco(e.target.value)}
-          placeholder="Ej: Banco Estado, Santander, BCI…"
-          className="w-full px-3 py-2 border border-input rounded-lg bg-background text-[13px]"
-        />
-      </div>
-      <div>
-        <label htmlFor="tipo" className="block text-[12px] font-semibold mb-1.5">Tipo</label>
-        <select
-          id="tipo"
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
-          className="w-full px-3 py-2 border border-input rounded-lg bg-background text-[13px]"
-        >
-          <option value="corriente">Corriente</option>
-          <option value="ahorro">Ahorro</option>
-          <option value="vista">Vista</option>
-          <option value="otro">Otro</option>
-        </select>
-      </div>
-      <div>
-        <label htmlFor="numero" className="block text-[12px] font-semibold mb-1.5">Número de cuenta</label>
-        <input
-          id="numero"
-          value={numero}
-          onChange={(e) => setNumero(e.target.value)}
-          placeholder="Número de cuenta"
-          className="w-full px-3 py-2 border border-input rounded-lg bg-background text-[13px] font-mono"
-        />
-      </div>
-      <div className="md:col-span-2">
-        <label htmlFor="titular" className="block text-[12px] font-semibold mb-1.5">Titular</label>
-        <input
-          id="titular"
-          value={titular}
-          onChange={(e) => setTitular(e.target.value)}
-          placeholder="Nombre del titular de la cuenta"
-          className="w-full px-3 py-2 border border-input rounded-lg bg-background text-[13px]"
-        />
-      </div>
-      <div>
-        <label htmlFor="rut" className="block text-[12px] font-semibold mb-1.5">RUT titular</label>
-        <input
-          id="rut"
-          value={rut}
-          onChange={(e) => setRut(e.target.value)}
-          placeholder="12345678-9"
-          className="w-full px-3 py-2 border border-input rounded-lg bg-background text-[13px] font-mono"
-          maxLength={12}
-        />
-      </div>
-      <div>
-        <label htmlFor="email" className="block text-[12px] font-semibold mb-1.5">Email (opcional)</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="correo@ejemplo.cl"
-          className="w-full px-3 py-2 border border-input rounded-lg bg-background text-[13px]"
-        />
-      </div>
-      <div className="flex items-center gap-3 mt-6 md:col-span-2">
-        <button
-          onClick={() => onSubmit({ banco, tipo, numero, titular, rut, email: email || undefined })}
-          disabled={!valido}
-          className="bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-[13.5px] font-semibold disabled:opacity-50"
-        >
-          {submitLabel}
-        </button>
-        <button onClick={onCancel} className="px-5 py-2.5 text-[13.5px] font-medium text-muted-foreground border border-border rounded-lg">
-          Cancelar
-        </button>
-      </div>
     </div>
   );
 }

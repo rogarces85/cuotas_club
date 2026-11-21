@@ -37,6 +37,30 @@ export default function EstadoCuentaPage() {
     m.periodos.some((p) => p.periodo.includes(busqueda))
   ) ?? [];
 
+  const exportarCsv = () => {
+    const filas = [
+      ['RUT', 'Nombre', 'Estado', 'Periodos pendientes', 'Cantidad', 'Periodos'],
+      ...morososFiltrados.map((m) => [
+        m.rut,
+        m.nombre,
+        m.estado,
+        String(m.totalDeuda),
+        String(m.totalDeuda),
+        m.periodos.map((p) => p.periodo).join(' '),
+      ]),
+    ];
+    const csv = filas
+      .map((f) => f.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
+      .join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `morosidad-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
       <div className="flex items-end justify-between gap-4 mb-5 flex-wrap">
@@ -46,6 +70,13 @@ export default function EstadoCuentaPage() {
             Socios con cuotas pendientes · {data ? data.length : 0} con deuda
           </p>
         </div>
+        <button
+          onClick={exportarCsv}
+          disabled={morososFiltrados.length === 0}
+          className="bg-secondary text-secondary-foreground rounded-lg px-[14px] py-[9px] text-[13px] font-semibold border border-border disabled:opacity-50"
+        >
+          Exportar CSV
+        </button>
       </div>
 
       {/* Búsqueda */}

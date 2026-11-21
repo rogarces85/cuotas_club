@@ -80,6 +80,24 @@ Cerrar el MVP del sistema de cuotas: módulo de gastos/egresos, reportes con exp
 
 typecheck ✅ (0 errores), build ✅ (shared+api+web), tests ✅ (31/31)
 
+## Revisión de alcance posterior (huecos cerrados)
+
+Contrastando el plan (§4.1 y §4.3) con el código, faltaban cuatro cosas. Se cerraron:
+
+- **Navegación muerta.** «Cuentas bancarias» y «Usuarios» no abrían nada. Usuarios está dentro de
+  Configuración (§4.3), así que se quitó del sidebar; Cuentas bancarias pasó a pantalla propia.
+- **Cuentas bancarias sin CRUD.** Solo existían GET/POST. Se agregaron PATCH y DELETE
+  (`api/src/bancos/routes.ts`) y la pantalla `web/src/pages/CuentasBancariasPage.tsx`.
+- **Niveles de cuota huérfanos.** La tabla `nivel_cuota` era clave en el modelo (§4.2) y no tenía
+  API ni UI. Se agregó CRUD en `/api/cuotas/niveles` y la sección en `CuotasPage`.
+- **Ficha de socio.** El plan la pide con historial de pagos. Se agregó `GET /api/socios/:id/ficha`
+  (datos + pagos + deuda derivada) y el modal «Ficha» en `SociosPage`.
+- **Export de morosidad.** El plan lo pide en Morosidad. Botón «Exportar CSV» en `EstadoCuentaPage`.
+
+Pendiente explícito, no bloqueante: «botón de recordatorio» del estado de cuenta (envío de correo
+al socio) y «generar cuotas masivas» como acción explícita (hoy la deuda se deriva de los períodos,
+que cubre el mismo resultado).
+
 ## Decisiones técnicas
 
 - Archivos (boletas, logo): misma infraestructura que comprobantes → `api/uploads/boletas/<sha256>`, `api/uploads/logo/...`

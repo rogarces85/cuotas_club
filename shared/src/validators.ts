@@ -105,6 +105,19 @@ export const crearNivelCuotaSchema = z.object({
   tipo: tipoCuotaSchema,
 });
 
+/**
+ * Edición de un nivel de cuota: campos opcionales, al menos uno requerido.
+ */
+export const actualizarNivelCuotaSchema = z
+  .object({
+    codigo: z.string().trim().min(1).max(20).optional(),
+    nombre: z.string().trim().min(1).max(80).optional(),
+    montoClp: montoClpSchema.optional(),
+    tipo: tipoCuotaSchema.optional(),
+    activo: z.boolean().optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
+
 export const crearPagoSchema = z.object({
   socioId: z.number().int().positive(),
   rut: rutSchema,
@@ -149,6 +162,21 @@ export const crearCuentaBancariaSchema = z.object({
   rut: rutSchema,
   email: z.string().email('Email inválido').optional().or(z.literal('')),
 });
+
+/**
+ * Edición de una cuenta bancaria: mismos campos, todos opcionales,
+ * pero al menos uno debe venir.
+ */
+export const actualizarCuentaBancariaSchema = z
+  .object({
+    banco: z.string().trim().min(1).max(80).optional(),
+    tipo: z.string().trim().min(1).max(30).optional(),
+    numero: z.string().trim().min(1).max(40).optional(),
+    titular: z.string().trim().min(1).max(160).optional(),
+    rut: rutSchema.optional(),
+    email: z.string().email('Email inválido').optional().or(z.literal('')),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
 
 /**
  * Día de vencimiento de una cuota (1–31). La validez del día en meses cortos
@@ -359,7 +387,10 @@ export type CrearPagoInput = z.infer<typeof crearPagoSchema>;
 export type ListarPagosQuery = z.infer<typeof listarPagosQuerySchema>;
 export type ActualizarPagoInput = z.infer<typeof actualizarPagoSchema>;
 export type CrearCuentaBancariaInput = z.infer<typeof crearCuentaBancariaSchema>;
+export type ActualizarCuentaBancariaInput = z.infer<typeof actualizarCuentaBancariaSchema>;
 export type CrearPeriodoCuotaInput = z.infer<typeof crearPeriodoCuotaSchema>;
+export type CrearNivelCuotaInput = z.infer<typeof crearNivelCuotaSchema>;
+export type ActualizarNivelCuotaInput = z.infer<typeof actualizarNivelCuotaSchema>;
 export type CrearComprobanteInput = z.infer<typeof crearComprobanteSchema>;
 export type ActualizarComprobanteInput = z.infer<typeof actualizarComprobanteSchema>;
 export type CrearEgresoInput = z.infer<typeof crearEgresoSchema>;

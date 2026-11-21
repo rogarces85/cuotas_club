@@ -5,7 +5,7 @@ import { db } from '../db/client.js';
 import { clubSchema } from '@cuotas-club/shared';
 import {
   crearCuentaBancariaSchema,
-  crearPeriodoCuotaSchema,
+  actualizarCuentaBancariaSchema,
 } from '@cuotas-club/shared';
 import { requireSession } from '../middleware/auth.js';
 import { parse } from 'csv-parse/sync';
@@ -64,6 +64,45 @@ bancos.post('/cuentas', zValidator('json', crearCuentaBancariaSchema), async (c)
     .limit(1);
 
   return c.json(cuenta, 201);
+});
+
+// PATCH /api/bancos/cuentas/:id
+bancos.patch('/cuentas/:id', zValidator('json', actualizarCuentaBancariaSchema), async (c) => {
+  const id = Number(c.req.param('id'));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({ error: 'Id de cuenta inválido' }, 400);
+  }
+
+  const input = c.req.valid('json');
+  await db.update(cuentaBancaria).set(input).where(eq(cuentaBancaria.id, id));
+
+  const [cuenta] = await db
+    .select()
+    .from(cuentaBancaria)
+    .where(eq(cuentaBancaria.id, id))
+    .limit(1);
+
+  if (!cuenta) return c.json({ error: 'Cuenta no encontrada' }, 404);
+  return c.json(cuenta);
+});
+
+// DELETE /api/bancos/cuentas/:id
+bancos.delete('/cuentas/:id', async (c) => {
+  const id = Number(c.req.param('id'));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({ error: 'Id de cuenta inválido' }, 400);
+  }
+
+  const [cuenta] = await db
+    .select({ id: cuentaBancaria.id })
+    .from(cuentaBancaria)
+    .where(eq(cuentaBancaria.id, id))
+    .limit(1);
+
+  if (!cuenta) return c.json({ error: 'Cuenta no encontrada' }, 404);
+
+  await db.delete(cuentaBancaria).where(eq(cuentaBancaria.id, id));
+  return c.json({ ok: true });
 });
 
 // GET /api/bancos/movimientos

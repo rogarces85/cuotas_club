@@ -12,7 +12,7 @@ import Shell from './components/Shell';
  * La sesión vive en cookie (Better Auth) y useSession() la resuelve al cargar.
  */
 
-type View = 'panel' | 'socios' | 'cuotas' | 'pagos' | 'morosidad' | 'estado' | 'bancos' | 'reportes' | 'config';
+type View = 'panel' | 'socios' | 'cuentas' | 'cuotas' | 'pagos' | 'morosidad' | 'estado' | 'bancos' | 'reportes' | 'config';
 
 export default function App() {
   const { data: session, isPending } = useSession();
@@ -39,6 +39,7 @@ export default function App() {
       activeItem={view}
       onItemClick={(label) => {
         if (label === 'Socios') setView('socios');
+        else if (label === 'Cuentas bancarias') setView('cuentas');
         else if (label === 'Cuotas') setView('cuotas');
         else if (label === 'Pagos') setView('pagos');
         else if (label === 'Morosidad') setView('morosidad');
