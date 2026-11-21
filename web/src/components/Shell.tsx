@@ -6,6 +6,7 @@ import EstadoCuentaPage from '../pages/EstadoCuentaPage';
 import BancosPage from '../pages/BancosPage';
 import ReportesPage from '../pages/ReportesPage';
 import ConfiguracionPage from '../pages/ConfiguracionPage';
+import PanelPage from '../pages/PanelPage';
 
 /**
  * Shell del sistema — sidebar negra, contenido blanco, rojo como acento.
@@ -171,17 +172,10 @@ export default function Shell({ user, activeItem, onItemClick }: Props) {
             <ReportesPage />
           ) : activeItem === 'config' ? (
             <ConfiguracionPage />
+          ) : activeItem === 'panel' ? (
+            <PanelPage />
           ) : (
-            <div className="p-6">
-              <h1 className="text-[21px] font-bold tracking-tight">Panel</h1>
-              <p className="text-[13px] text-muted-foreground mt-[3px]">
-                Resumen de cobranza del club · Noviembre 2026
-              </p>
-              <div className="mt-5 bg-card border border-dashed border-border rounded-[10px] p-8 text-center text-muted-foreground text-sm">
-                Los módulos de socios y cuotas están disponibles desde la barra lateral.
-                Los indicadores de esta pantalla son de muestra.
-              </div>
-            </div>
+            <PanelPage />
           )}
         </main>
       </div>
