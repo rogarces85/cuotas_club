@@ -126,7 +126,7 @@ export async function crearPago(input: CrearPagoInput) {
       updatedAt: ts,
     });
 
-  return obtenerPago(Number(result.id));
+  return obtenerPago(Number(result.insertId));
 }
 
 export async function aprobarPago(id: number) {

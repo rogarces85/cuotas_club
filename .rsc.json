@@ -40,7 +40,7 @@
   ],
   "agents": [],
   "ownSkills": [],
-  "catalogVersion": "4.1.7",
+  "catalogVersion": "4.1.8",
   "tier": null,
   "optOuts": [
     "trunk-guard"
