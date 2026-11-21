@@ -32,9 +32,10 @@ Cerrar el MVP del sistema de cuotas: módulo de gastos/egresos, reportes con exp
   - Endpoint para subir logo del club
 
 - **Importación socios**:
-  - POST `/api/importar/socios` — importar CSV/Excel con los 54 socios reales
+  - POST `/api/socios/importar` — importar Excel/CSV con los 54 socios reales
+  - GET `/api/socios/plantilla` — plantilla limpia (más tarde, en el módulo Socios)
   - Validar RUT, normalizar, evitar duplicados
-  - Script `npm run db:import-socios` para correr en PC de casa
+  - Script `api/scripts/importar-socios.mjs` para correr en PC de casa
 
 - **Panel (Dashboard)**:
   - GET `/api/panel/kpis` — 4 KPIs: recaudado mes, socios morosos, socios activos, comprobantes por revisar
@@ -55,7 +56,7 @@ Cerrar el MVP del sistema de cuotas: módulo de gastos/egresos, reportes con exp
 - [x] T2 — API: gastos/egresos (categorías, egresos, gastos fijos, otros ingresos + boleta) — `api/src/gastos/routes.ts`, `shared/src/validators.ts`, `shared/src/schema/club.ts`
 - [x] T3 — API: reportes (balance + export XLSX/PDF) — `api/src/reportes/routes.ts`
 - [x] T4 — API: configuración (club, logo, usuarios/roles) — `api/src/config/routes.ts`, `shared/src/schema/club.ts`
-- [x] T5 — API: importación socios + script CLI — `api/scripts/importar-socios.mjs`, `api/src/config/routes.ts`
+- [x] T5 — API: importación socios + script CLI — `api/scripts/importar-socios.mjs`, luego movida a `api/src/socios/import.ts`
 - [x] T6 — API: panel (KPIs, serie recaudación, últimos pagos) — `api/src/panel/routes.ts`
 - [x] T7 — Frontend: página Gastos — `web/src/pages/GastosPage.tsx`, `web/src/lib/api.ts`
 - [x] T8 — Frontend: página Reportes — `web/src/pages/ReportesPage.tsx`, `web/src/lib/api.ts`
@@ -68,12 +69,12 @@ Cerrar el MVP del sistema de cuotas: módulo de gastos/egresos, reportes con exp
 
 - **T2**: `api/src/gastos/routes.ts` — CRUD categorías, egresos (con boleta), gastos fijos, otros ingresos
 - **T3**: `api/src/reportes/routes.ts` — balance con export XLSX/PDF, detalle pagos/egresos
-- **T4**: `api/src/config/routes.ts` — config club, logo, usuarios/roles, importar socios
-- **T5**: `api/scripts/importar-socios.mjs` — CLI con validación RUT, dry-run, force
+- **T4**: `api/src/config/routes.ts` — config club, logo, usuarios/roles
+- **T5**: `api/scripts/importar-socios.mjs` — CLI con validación RUT, dry-run, force (hoy la importación web vive en `api/src/socios/import.ts`)
 - **T6**: `api/src/panel/routes.ts` — KPIs, serie 6 meses, últimos pagos, meta, resumen
 - **T7**: `web/src/pages/GastosPage.tsx` — tabs categorías/egresos/fijos/ingresos con modales
 - **T8**: `web/src/pages/ReportesPage.tsx` — balance, KPIs, tablas detalle, export XLSX/PDF
-- **T9**: `web/src/pages/ConfiguracionPage.tsx` — datos club, logo, usuarios/roles, importar socios
+- **T9**: `web/src/pages/ConfiguracionPage.tsx` — datos club, logo, usuarios/roles (la importación se movió a Socios → Importar)
 - **T10**: `web/src/pages/PanelPage.tsx` — KPIs, gráfico barras recaudación, meta, últimos pagos, saldo
 - **T11**: `api/scripts/importar-socios.mjs` — script CLI listo para PC de casa
 - **T12**: `api/scripts/e2e-balance-check.mjs` — verifica balance cuadra contra datos de BD

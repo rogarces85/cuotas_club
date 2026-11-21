@@ -78,6 +78,9 @@ export async function crearSocio(input: CrearSocioInput) {
       nombre: input.nombre,
       anio: input.anio,
       sexo: input.sexo ?? null,
+      fechaNacimiento: input.fechaNacimiento ?? null,
+      fechaIngreso: input.fechaIngreso ?? null,
+      direccion: input.direccion ?? null,
       estado: input.estado ?? 'ACTIVO',
       activo: 1,
       email: input.email || null,
@@ -98,7 +101,12 @@ export async function actualizarSocio(id: number, input: ActualizarSocioInput) {
       ...(input.rut !== undefined ? { rut: input.rut } : {}),
       ...(input.nombre !== undefined ? { nombre: input.nombre } : {}),
       ...(input.anio !== undefined ? { anio: input.anio } : {}),
-      ...(input.sexo !== undefined ? { sexo: input.sexo || null } : {}),
+      // `sexo`, `fechaNacimiento`, `fechaIngreso` y `direccion` llegan
+      // normalizados por el validador: null significa "borrar el dato".
+      ...(input.sexo !== undefined ? { sexo: input.sexo } : {}),
+      ...(input.fechaNacimiento !== undefined ? { fechaNacimiento: input.fechaNacimiento } : {}),
+      ...(input.fechaIngreso !== undefined ? { fechaIngreso: input.fechaIngreso } : {}),
+      ...(input.direccion !== undefined ? { direccion: input.direccion } : {}),
       ...(input.estado !== undefined ? { estado: input.estado } : {}),
       ...(input.email !== undefined ? { email: input.email || null } : {}),
       ...(input.telefono !== undefined ? { telefono: input.telefono || null } : {}),

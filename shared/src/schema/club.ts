@@ -35,7 +35,11 @@ export const socio = mysqlTable(
     rut: varchar('rut', { length: 12 }).notNull(),
     nombre: varchar('nombre', { length: 160 }).notNull(),
     anio: smallint('anio').notNull(),
+    // Valores canónicos: HOMBRE | MUJER | INDEFINIDO (validados en shared/validators.ts).
     sexo: varchar('sexo', { length: 20 }),
+    fechaNacimiento: date('fecha_nacimiento', { mode: 'string' }),
+    fechaIngreso: date('fecha_ingreso', { mode: 'string' }),
+    direccion: varchar('direccion', { length: 255 }),
     estado: varchar('estado', { length: 30 }).notNull().default('ACTIVO'),
     activo: tinyint('activo').notNull().default(1),
     email: varchar('email', { length: 255 }),

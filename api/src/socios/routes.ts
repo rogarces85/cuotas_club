@@ -15,6 +15,11 @@ import {
   actualizarSocio,
   desactivarSocio,
 } from './repo.js';
+import {
+  ErrorImportacion,
+  generarPlantillaSocios,
+  importarDesdeFormData,
+} from './import.js';
 
 /**
  * Rutas de socios. Todas exigen sesión válida (requireSession).
@@ -30,6 +35,45 @@ socios.get('/', zValidator('query', listarSociosQuerySchema), async (c) => {
   const query = c.req.valid('query');
   const resultado = await listarSocios(query);
   return c.json(resultado);
+});
+
+// GET /api/socios/plantilla — plantilla Excel limpia para la importación masiva.
+// Debe declararse antes de `/:id` para que "plantilla" no se lea como un id.
+socios.get('/plantilla', (c) => {
+  const buffer = generarPlantillaSocios();
+  return new Response(new Uint8Array(buffer), {
+    headers: {
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="plantilla-socios-osorno-runners.xlsx"',
+      'Content-Length': String(buffer.length),
+      'Cache-Control': 'no-store',
+    },
+  });
+});
+
+// POST /api/socios/importar — alta/actualización masiva desde .xlsx, .xls o .csv.
+// Acepta `dryRun=true` para validar y previsualizar sin escribir en la base.
+socios.post('/importar', async (c) => {
+  let formData: FormData;
+  try {
+    formData = await c.req.formData();
+  } catch {
+    return c.json({ error: 'Se esperaba un formulario multipart con el campo "archivo"' }, 400);
+  }
+
+  try {
+    const resultado = await importarDesdeFormData(formData);
+    return c.json(resultado);
+  } catch (err) {
+    if (err instanceof ErrorImportacion) {
+      return c.json(
+        { error: err.message, detalleErrores: err.detalle },
+        err.detalle.length > 0 ? 422 : 400,
+      );
+    }
+    console.error('[socios] importación fallida:', err);
+    return c.json({ error: 'No se pudo procesar la importación' }, 500);
+  }
 });
 
 // GET /api/socios/:id — ficha de un socio.

@@ -68,7 +68,7 @@ async function main() {
   const alta = await req('/api/socios', {
     method: 'POST',
     cookie,
-    body: { rut: RUT_TEST, nombre: 'Socio Verificación', anio: 2026, sexo: 'F', estado: 'ACTIVO' },
+    body: { rut: RUT_TEST, nombre: 'Socio Verificación', anio: 2026, sexo: 'MUJER', estado: 'ACTIVO' },
   });
   check('AC2 alta → 201', alta.status === 201, `→ ${alta.status} ${JSON.stringify(alta.data)}`);
   const id = alta.data?.id;

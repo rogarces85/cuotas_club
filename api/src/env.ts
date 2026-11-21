@@ -46,4 +46,8 @@ export const env = {
     // que es donde app.ts monta el handler.
     return process.env.BETTER_AUTH_URL ?? 'http://localhost:8787';
   },
+  get googleMapsApiKey(): string {
+    // Opcional. Sin clave, la validación de direcciones usa OpenStreetMap.
+    return process.env.GOOGLE_MAPS_API_KEY?.trim() ?? '';
+  },
 };

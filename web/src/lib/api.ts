@@ -10,10 +10,12 @@ const BASE = '/api';
 
 export class ApiError extends Error {
   status: number;
+  detalle: string[];
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, detalle: string[] = []) {
     super(message);
     this.status = status;
+    this.detalle = detalle;
   }
 }
 
@@ -29,13 +31,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     let message = `Error ${res.status}`;
+    let detalle: string[] = [];
     try {
-      const body = (await res.json()) as { error?: string };
+      const body = (await res.json()) as { error?: string; detalleErrores?: string[] };
       if (body.error) message = body.error;
+      if (Array.isArray(body.detalleErrores)) detalle = body.detalleErrores;
     } catch {
       // sin cuerpo JSON
     }
-    throw new ApiError(res.status, message);
+    throw new ApiError(res.status, message, detalle);
   }
 
   if (res.status === 204) return undefined as T;
@@ -53,6 +57,9 @@ export type Socio = {
   nombre: string;
   anio: number;
   sexo: string | null;
+  fechaNacimiento: string | null;
+  fechaIngreso: string | null;
+  direccion: string | null;
   estado: string;
   activo: number;
   email: string | null;
@@ -66,6 +73,9 @@ export type SocioInput = {
   nombre: string;
   anio: number;
   sexo?: string;
+  fechaNacimiento?: string;
+  fechaIngreso?: string;
+  direccion?: string;
   estado?: string;
   email?: string;
   telefono?: string;
@@ -110,6 +120,92 @@ export function actualizarSocio(id: number, input: Partial<SocioInput>): Promise
 
 export function desactivarSocio(id: number): Promise<Socio> {
   return request<Socio>(`/socios/${id}`, { method: 'DELETE' });
+}
+
+// ---------------------------------------------------------------------------
+// Direcciones (validación con Google Maps / OpenStreetMap)
+// ---------------------------------------------------------------------------
+
+export type SugerenciaDireccion = {
+  direccion: string;
+  detalle: string;
+  lat: number | null;
+  lng: number | null;
+  precision: string | null;
+};
+
+export type RespuestaDirecciones = {
+  proveedor: 'google' | 'nominatim';
+  resultados: SugerenciaDireccion[];
+};
+
+export function buscarDirecciones(q: string, limit = 5): Promise<RespuestaDirecciones> {
+  const qs = new URLSearchParams({ q, limit: String(limit) });
+  return request<RespuestaDirecciones>(`/geocoding/buscar?${qs.toString()}`);
+}
+
+// ---------------------------------------------------------------------------
+// Importación masiva de socios (Excel / CSV)
+// ---------------------------------------------------------------------------
+
+export type ResultadoImportacionSocios = {
+  simulado: boolean;
+  totalFilas: number;
+  validos: number;
+  insertados: number;
+  actualizados: number;
+  saltados: number;
+  errores: number;
+  detalleErrores: string[];
+};
+
+export async function descargarPlantillaSocios(): Promise<Blob> {
+  const res = await fetch(`${BASE}/socios/plantilla`, { credentials: 'include' });
+
+  if (!res.ok) {
+    let message = `Error ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) message = body.error;
+    } catch {
+      // sin cuerpo JSON
+    }
+    throw new ApiError(res.status, message);
+  }
+
+  return res.blob();
+}
+
+export async function importarSocios(
+  archivo: File,
+  force = false,
+  dryRun = false,
+): Promise<ResultadoImportacionSocios> {
+  const formData = new FormData();
+  formData.append('archivo', archivo);
+  formData.append('force', String(force));
+  formData.append('dryRun', String(dryRun));
+
+  const res = await fetch(`${BASE}/socios/importar`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let message = `Error ${res.status}`;
+    let detalle: string[] = [];
+    try {
+      const body = (await res.json()) as { error?: string; detalleErrores?: string[] };
+      if (body.error) message = body.error;
+      if (Array.isArray(body.detalleErrores)) detalle = body.detalleErrores;
+    } catch {
+      // sin cuerpo JSON
+    }
+    throw new ApiError(res.status, message, detalle);
+  }
+
+  return (await res.json()) as ResultadoImportacionSocios;
 }
 
 // ---------------------------------------------------------------------------
@@ -794,31 +890,6 @@ export function actualizarRolUsuario(userId: string, rol: 'DIRECTIVA' | 'TESORER
 
 export function eliminarRolUsuario(userId: string): Promise<{ ok: boolean }> {
   return request<{ ok: boolean }>(`/config/usuarios/${userId}`, { method: 'DELETE' });
-}
-
-export async function importarSocios(archivo: File, force = false): Promise<{ insertados: number; actualizados: number; saltados: number; errores: number; detalleErrores: string[] }> {
-  const formData = new FormData();
-  formData.append('archivo', archivo);
-  formData.append('force', String(force));
-
-  const res = await fetch(`${BASE}/config/importar/socios`, {
-    method: 'POST',
-    credentials: 'include',
-    body: formData,
-  });
-
-  if (!res.ok) {
-    let message = `Error ${res.status}`;
-    try {
-      const body = (await res.json()) as { error?: string };
-      if (body.error) message = body.error;
-    } catch {
-      // sin cuerpo JSON
-    }
-    throw new ApiError(res.status, message);
-  }
-
-  return (await res.json()) as { insertados: number; actualizados: number; saltados: number; errores: number; detalleErrores: string[] };
 }
 
 export function urlLogo(sha256: string): string {

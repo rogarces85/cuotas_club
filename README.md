@@ -13,7 +13,7 @@ Cobra cuotas, registra pagos por transferencia con comprobante, valida quién pa
 | Hito | Qué entrega | Estado |
 |---|---|---|
 | **M0** | Base: workspaces, base de datos, autenticación, tema y login | ✅ Terminado |
-| M1 | Socios: alta, edición, búsqueda | Siguiente |
+| M1 | Socios: alta, edición, búsqueda, fechas, direcciones y carga masiva | ✅ Terminado |
 | M2 | Cuotas: períodos, montos, vencimientos | Pendiente |
 | M3 | Pagos: comprobantes, aprobación y estado de cuenta | ✅ Backend completado | Pendiente frontend |
 | M4 | Cobranza: morosidad, estado de cuenta | Pendiente |
@@ -60,6 +60,7 @@ Ahora edita `api/.env` y completa **tres** valores:
 | `DB_PASSWORD` | Una clave que elijas para el usuario de la app (la inventas aquí) |
 | `BETTER_AUTH_SECRET` | Un secreto aleatorio. Genéralo con el comando de abajo |
 | `DB_ROOT_PASSWORD` | La clave de root de tu MySQL (en XAMPP suele estar vacía) |
+| `GOOGLE_MAPS_API_KEY` | Opcional. Sin clave, la validación de direcciones usa OpenStreetMap (gratis, sin registro) |
 
 Para generar el secreto de autenticación:
 
@@ -122,9 +123,38 @@ SELECT id, 'TESORERO', UNIX_TIMESTAMP() FROM user WHERE email = 'tu-correo@ejemp
 | `npm run dev` | Levanta API (`:8787`) y frontend (`:5173`) juntos |
 | `npm run build` | Compila los tres workspaces para producción |
 | `npm run typecheck` | Verifica tipos en todo el proyecto |
+| `npm run test -w api` | Corre la suite de Vitest |
 | `npm run db:setup -w api` | Crea la base y el usuario de la aplicación |
 | `npm run db:migrate -w api` | Aplica las migraciones pendientes |
 | `npm run db:generate -w api` | Genera una migración nueva desde el esquema |
+
+Las pruebas de integración usan la base de descarte `osorno_runners_v2_test`.
+Cuando cambia el esquema, migra también esa base:
+
+```powershell
+$env:DB_NAME='osorno_runners_v2_test'; npm run db:migrate -w api
+```
+
+---
+
+## Socios
+
+El padrón guarda RUT, nombre, sexo (Hombre / Mujer / Indefinido), fecha de
+nacimiento, fecha de ingreso, dirección, email, teléfono, año de membresía y
+estado. La dirección se puede validar contra OpenStreetMap o Google Maps desde
+el mismo formulario.
+
+La carga masiva vive en **Socios → Importar**:
+
+1. Descarga la plantilla Excel limpia (hojas *Socios*, *Ejemplos* e
+   *Instrucciones*).
+2. Llena una fila por integrante y sube el archivo (.xlsx, .xls o .csv).
+3. Revisa el resumen: cuántos se crean, cuántos se actualizan y qué filas
+   tienen errores.
+4. Confirma. Toda la importación entra en una transacción.
+
+La importación valida el RUT con módulo 11, las fechas y el catálogo de sexo, y
+nunca pisa datos existentes con celdas vacías.
 
 ---
 
@@ -181,6 +211,7 @@ Toda la documentación vive en [`02-DOCS/wiki/`](02-DOCS/wiki/index.md).
 | [Arquitectura](02-DOCS/wiki/product/arquitectura.md) | Stack con versiones verificadas, decisiones y riesgos |
 | [Marca y paleta](02-DOCS/wiki/product/marca-y-paleta.md) | Colores medidos del logo, tokens CSS |
 | [M0 — base](02-DOCS/wiki/ftd/m0-base.md) | Qué se construyó y con qué evidencia |
+| [Socios — campos e importación](02-DOCS/wiki/ftd/socios-campos-importacion.md) | Fechas, sexo, direcciones y carga masiva en Excel |
 
 ---
 

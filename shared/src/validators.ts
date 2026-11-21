@@ -35,10 +35,114 @@ export const montoClpSchema = z
   .nonnegative('El monto no puede ser negativo');
 
 /**
- * Sexo / estado de un socio. Se dejan como string libre por ahora,
- * heredando los valores ya presentes en los datos (ACTIVO, MEMBRESIA).
+ * Sexo del socio: catálogo cerrado, en mayúsculas en la base.
+ * En la UI se muestran las etiquetas de `SEXO_SOCIO_LABELS`.
+ */
+export const SEXOS_SOCIO = ['HOMBRE', 'MUJER', 'INDEFINIDO'] as const;
+
+export type SexoSocio = (typeof SEXOS_SOCIO)[number];
+
+export const SEXO_SOCIO_LABELS: Record<SexoSocio, string> = {
+  HOMBRE: 'Hombre',
+  MUJER: 'Mujer',
+  INDEFINIDO: 'Indefinido',
+};
+
+export const sexoSocioSchema = z.enum(SEXOS_SOCIO);
+
+/**
+ * Estado del socio en el padrón. Se deja como string acotado para no
+ * romper datos históricos (ACTIVO, MEMBRESIA, BECADO).
  */
 export const estadoSocioSchema = z.string().trim().min(1).max(30);
+
+// ---------------------------------------------------------------------------
+// Fechas (AAAA-MM-DD) y dirección
+// ---------------------------------------------------------------------------
+
+const FECHA_ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Verdadero si el texto es una fecha calendario real (rechaza 2026-02-31). */
+export function esFechaISO(valor: string): boolean {
+  if (!FECHA_ISO_RE.test(valor)) return false;
+  const [anio, mes, dia] = valor.split('-').map(Number);
+  const fecha = new Date(Date.UTC(anio, mes - 1, dia));
+  return (
+    fecha.getUTCFullYear() === anio &&
+    fecha.getUTCMonth() === mes - 1 &&
+    fecha.getUTCDate() === dia
+  );
+}
+
+/** Hoy en la zona local del proceso, como AAAA-MM-DD. */
+export function fechaHoyISO(): string {
+  const hoy = new Date();
+  const dos = (n: number) => String(n).padStart(2, '0');
+  return `${hoy.getFullYear()}-${dos(hoy.getMonth() + 1)}-${dos(hoy.getDate())}`;
+}
+
+/** Fecha calendario opcional. Se recibe y devuelve como AAAA-MM-DD. */
+export const fechaISO = z
+  .string()
+  .trim()
+  .regex(FECHA_ISO_RE, 'Fecha inválida: usa AAAA-MM-DD')
+  .refine(esFechaISO, 'La fecha no existe en el calendario');
+
+export const fechaNacimientoSchema = fechaISO
+  .refine((v) => v >= '1900-01-01', 'Fecha de nacimiento demasiado antigua')
+  .refine((v) => v <= fechaHoyISO(), 'La fecha de nacimiento no puede ser futura');
+
+export const fechaIngresoSchema = fechaISO
+  .refine((v) => v >= '1950-01-01', 'Fecha de ingreso demasiado antigua')
+  .refine((v) => v <= fechaHoyISO(), 'La fecha de ingreso no puede ser futura');
+
+export const direccionSchema = z
+  .string()
+  .trim()
+  .min(3, 'Dirección muy corta')
+  .max(255, 'Dirección muy larga');
+
+// En el alta, "" y null significan "sin dato": se normalizan a undefined.
+const fechaNacimientoAlta = z
+  .union([fechaNacimientoSchema, z.literal(''), z.null()])
+  .optional()
+  .transform((v) => (v === '' || v === null ? undefined : v));
+
+const fechaIngresoAlta = z
+  .union([fechaIngresoSchema, z.literal(''), z.null()])
+  .optional()
+  .transform((v) => (v === '' || v === null ? undefined : v));
+
+const direccionAlta = z
+  .union([direccionSchema, z.literal(''), z.null()])
+  .optional()
+  .transform((v) => (v === '' || v === null ? undefined : v));
+
+const sexoAlta = z
+  .union([sexoSocioSchema, z.literal(''), z.null()])
+  .optional()
+  .transform((v) => (v === '' || v === null ? undefined : v));
+
+// En la edición, "" y null borran el dato: se normalizan a null.
+const fechaNacimientoEditable = z
+  .union([fechaNacimientoSchema, z.literal(''), z.null()])
+  .optional()
+  .transform((v) => (v === '' ? null : v));
+
+const fechaIngresoEditable = z
+  .union([fechaIngresoSchema, z.literal(''), z.null()])
+  .optional()
+  .transform((v) => (v === '' ? null : v));
+
+const direccionEditable = z
+  .union([direccionSchema, z.literal(''), z.null()])
+  .optional()
+  .transform((v) => (v === '' ? null : v));
+
+const sexoEditable = z
+  .union([sexoSocioSchema, z.literal(''), z.null()])
+  .optional()
+  .transform((v) => (v === '' ? null : v));
 
 export const tipoCuotaSchema = z.enum(['ACTIVO', 'MEMBRESIA', 'BECADO', 'OTRO']);
 
@@ -56,7 +160,10 @@ const socioBase = {
   rut: rutSchema,
   nombre: nombreSchema,
   anio: z.number().int().min(2020).max(2100),
-  sexo: z.string().trim().max(20).optional(),
+  sexo: sexoAlta,
+  fechaNacimiento: fechaNacimientoAlta,
+  fechaIngreso: fechaIngresoAlta,
+  direccion: direccionAlta,
   estado: estadoSocioSchema.optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   telefono: z.string().trim().max(30).optional(),
@@ -77,7 +184,10 @@ export const actualizarSocioSchema = z
     rut: rutSchema.optional(),
     nombre: nombreSchema.optional(),
     anio: z.number().int().min(2020).max(2100).optional(),
-    sexo: z.string().trim().max(20).optional().or(z.literal('')),
+    sexo: sexoEditable,
+    fechaNacimiento: fechaNacimientoEditable,
+    fechaIngreso: fechaIngresoEditable,
+    direccion: direccionEditable,
     estado: estadoSocioSchema.optional(),
     email: z.string().email('Email inválido').optional().or(z.literal('')),
     telefono: z.string().trim().max(30).optional().or(z.literal('')),
@@ -306,14 +416,17 @@ export const actualizarUsuarioRolSchema = z.object({
 }).refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
 
 /**
- * Importación de socios (CSV).
+ * Importación de socios (Excel .xlsx o CSV).
  */
 export const importarSociosSchema = z.object({
   socios: z.array(z.object({
     rut: rutSchema,
     nombre: nombreSchema,
     anio: z.number().int().min(2020).max(2100),
-    sexo: z.string().trim().max(20).optional(),
+    sexo: sexoSocioSchema.optional(),
+    fechaNacimiento: fechaNacimientoSchema.optional(),
+    fechaIngreso: fechaIngresoSchema.optional(),
+    direccion: direccionSchema.optional(),
     estado: estadoSocioSchema.optional(),
     email: z.string().email('Email inválido').optional().or(z.literal('')),
     telefono: z.string().trim().max(30).optional(),

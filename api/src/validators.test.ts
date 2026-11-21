@@ -8,6 +8,9 @@ import {
   periodoSchema,
   crearPeriodoCuotaSchema,
   diaVencimientoSchema,
+  sexoSocioSchema,
+  fechaNacimientoSchema,
+  fechaIngresoSchema,
 } from '@cuotas-club/shared';
 
 /**
@@ -77,6 +80,58 @@ describe('actualizarSocioSchema', () => {
   it('NO expone activo como editable (server-owned)', () => {
     const r = actualizarSocioSchema.parse({ nombre: 'Juan Editado', activo: true } as object);
     expect(r).not.toHaveProperty('activo');
+  });
+});
+
+describe('campos nuevos del socio (fechas, sexo cerrado y dirección)', () => {
+  const base = { rut: '17682512K', nombre: 'Juan Pérez', anio: 2026 };
+
+  it('acepta solo el catálogo Hombre/Mujer/Indefinido', () => {
+    expect(sexoSocioSchema.parse('HOMBRE')).toBe('HOMBRE');
+    expect(sexoSocioSchema.parse('MUJER')).toBe('MUJER');
+    expect(sexoSocioSchema.parse('INDEFINIDO')).toBe('INDEFINIDO');
+    expect(() => sexoSocioSchema.parse('OTRO')).toThrow();
+    expect(() => sexoSocioSchema.parse('F')).toThrow();
+  });
+
+  it('acepta un sexo vacío en el alta y lo normaliza a sin dato', () => {
+    const r = crearSocioSchema.parse({ ...base, sexo: '' });
+    expect(r.sexo).toBeUndefined();
+  });
+
+  it('acepta fechas reales y rechaza fechas imposibles', () => {
+    expect(fechaNacimientoSchema.parse('1990-03-15')).toBe('1990-03-15');
+    expect(fechaIngresoSchema.parse('2021-03-01')).toBe('2021-03-01');
+    expect(() => fechaNacimientoSchema.parse('1990-02-31')).toThrow();
+    expect(() => fechaNacimientoSchema.parse('15-03-1990')).toThrow();
+  });
+
+  it('rechaza fechas futuras de nacimiento e ingreso', () => {
+    expect(() => fechaNacimientoSchema.parse('2999-01-01')).toThrow();
+    expect(() => fechaIngresoSchema.parse('2999-01-01')).toThrow();
+  });
+
+  it('guarda fecha de nacimiento, fecha de ingreso y dirección en el alta', () => {
+    const r = crearSocioSchema.parse({
+      ...base,
+      fechaNacimiento: '1990-03-15',
+      fechaIngreso: '2021-03-01',
+      direccion: '  Av. Juan Mackenna 1234, Osorno  ',
+    });
+    expect(r.fechaNacimiento).toBe('1990-03-15');
+    expect(r.fechaIngreso).toBe('2021-03-01');
+    expect(r.direccion).toBe('Av. Juan Mackenna 1234, Osorno');
+  });
+
+  it('en el PATCH, vaciar un campo lo deja en null (borrado explícito)', () => {
+    const r = actualizarSocioSchema.parse({ sexo: '', fechaNacimiento: '', direccion: '' });
+    expect(r.sexo).toBeNull();
+    expect(r.fechaNacimiento).toBeNull();
+    expect(r.direccion).toBeNull();
+  });
+
+  it('rechaza una dirección demasiado larga', () => {
+    expect(() => crearSocioSchema.parse({ ...base, direccion: 'x'.repeat(256) })).toThrow();
   });
 });
 

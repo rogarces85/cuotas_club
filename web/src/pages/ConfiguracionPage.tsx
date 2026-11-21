@@ -9,7 +9,6 @@ import {
   asignarRolUsuario,
   actualizarRolUsuario,
   eliminarRolUsuario,
-  importarSocios,
   urlLogo,
   ApiError,
   type ConfigClub,
@@ -37,7 +36,6 @@ function Badge({ value, color = 'secondary' }: { value: string; color?: string }
 type ModalState =
   | { tipo: 'logo' }
   | { tipo: 'usuario'; modo: 'crear' | 'editar'; data?: UsuarioRol }
-  | { tipo: 'importar' }
   | null;
 
 export default function ConfiguracionPage() {
@@ -46,11 +44,6 @@ export default function ConfiguracionPage() {
   const [archivoLogo, setArchivoLogo] = useState<File | null>(null);
   const [subiendoLogo, setSubiendoLogo] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
-  const [archivoImportar, setArchivoImportar] = useState<File | null>(null);
-  const [importando, setImportando] = useState(false);
-  const [importarError, setImportarError] = useState<string | null>(null);
-  const [importarResultado, setImportarResultado] = useState<string | null>(null);
-  const [forceImportar, setForceImportar] = useState(false);
 
   // Configuración del club
   const { data: config, isPending: configPending, refetch: refetchConfig } = useQuery({
@@ -103,20 +96,6 @@ export default function ConfiguracionPage() {
     mutationFn: (userId: string) => eliminarRolUsuario(userId),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['usuarios-roles'] }); },
     onError: (err) => setError(err instanceof ApiError ? err.message : 'Error eliminando rol'),
-  });
-
-  const importarMut = useMutation({
-    mutationFn: () => importarSocios(archivoImportar!, forceImportar),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['socios'] });
-      setImportando(false);
-      setArchivoImportar(null);
-      setImportarError(null);
-      setImportarResultado(`${res.insertados} insertados, ${res.actualizados} actualizados, ${res.saltados} saltados, ${res.errores} errores`);
-      setModal(null);
-      setForceImportar(false);
-    },
-    onError: (err) => { setImportarError(err instanceof ApiError ? err.message : 'Error importando'); setImportando(false); },
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -254,30 +233,9 @@ export default function ConfiguracionPage() {
         )}
       </div>
 
-      {/* Sección: Importación de socios */}
-      <div className="bg-card border border-border rounded-[10px] p-4">
-        <h2 className="text-[14px] font-semibold mb-4">Importar socios (CSV)</h2>
-        <p className="text-[12.5px] text-muted-foreground mb-4">
-          Formato: <code className="font-mono bg-secondary px-1.5 py-0.5 rounded">rut,nombre,anio,sexo,estado,email,telefono,activo</code>
-          <br />El RUT se normaliza y valida (dígito verificador). <code>activo</code> = true/false (default true).
-        </p>
-        <button
-          onClick={() => setModal({ tipo: 'importar' })}
-          disabled={importando}
-          className="bg-secondary text-secondary-foreground rounded-lg px-4 py-2 text-[13px] font-semibold border border-border disabled:opacity-50"
-        >
-          {importando ? 'Importando…' : 'Importar socios'}
-        </button>
-        {importarResultado && (
-          <div className="mt-3 p-3 bg-success/10 border border-success/30 rounded-lg text-[12.5px] text-success">
-            {importarResultado}
-          </div>
-        )}
-      </div>
-
       {/* Modales */}
       {modal && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => { setModal(null); setArchivoLogo(null); setArchivoImportar(null); setImportarError(null); setImportarResultado(null); setLogoError(null); setForceImportar(false); }}>
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => { setModal(null); setArchivoLogo(null); setLogoError(null); }}>
           <div className="w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-card border border-border rounded-[12px] p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
             {modal.tipo === 'logo' && <LogoModal
               onCancel={() => { setModal(null); setArchivoLogo(null); setLogoError(null); }}
@@ -298,17 +256,6 @@ export default function ConfiguracionPage() {
               }
               onCancel={() => setModal(null)}
               onSubmit={async (v) => { if (modal.modo === 'crear') await crearUsuario.mutateAsync(v); else await editarUsuario.mutateAsync(v); }}
-            />}
-
-            {modal.tipo === 'importar' && <ImportarModal
-              onCancel={() => { setModal(null); setArchivoImportar(null); setImportarError(null); setImportarResultado(null); setForceImportar(false); }}
-              onSubmit={async () => { await importarMut.mutateAsync(); }}
-              isPending={importando}
-              error={importarError}
-              setArchivo={setArchivoImportar}
-              archivo={archivoImportar}
-              force={forceImportar}
-              setForce={setForceImportar}
             />}
           </div>
         </div>
@@ -438,31 +385,6 @@ function UsuarioModal({ modo, initial, submitLabel, onCancel, onSubmit }: Usuari
       <div className="flex items-center gap-3 justify-end mt-6">
         <button onClick={onCancel} className="px-5 py-2.5 text-[13.5px] font-medium text-muted-foreground border border-border rounded-lg">Cancelar</button>
         <button onClick={() => onSubmit({ userId, rol })} disabled={!valido} className="bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-[13.5px] font-semibold disabled:opacity-50">{submitLabel}</button>
-      </div>
-    </div>
-  );
-}
-
-function ImportarModal({ onCancel, onSubmit, isPending, error, setArchivo, archivo, force, setForce }: any) {
-  return (
-    <div>
-      <h2 className="text-[17px] font-bold tracking-tight mb-5">Importar socios (CSV)</h2>
-      <p className="text-[12.5px] text-muted-foreground mb-4">
-        Columnas: <code className="font-mono bg-secondary px-1.5 py-0.5 rounded">rut,nombre,anio,sexo,estado,email,telefono,activo</code>
-      </p>
-      {error && <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-[12.5px] text-destructive">{error}</div>}
-      <div className="mb-4">
-        <label className="block text-[12px] font-semibold mb-1.5">Archivo CSV</label>
-        <input type="file" accept=".csv,text/csv" onChange={e => { setArchivo(e.target.files?.[0] ?? null); }} disabled={isPending} className="w-full px-3 py-2 border border-input rounded-lg bg-background text-[13px]" />
-      </div>
-      <div className="mb-4 flex items-center gap-2">
-        <input type="checkbox" id="force" checked={force} onChange={e => setForce(e.target.checked)} className="w-4 h-4 rounded border-border text-primary focus:ring-primary" />
-        <label htmlFor="force" className="text-[13px] font-medium">Forzar actualización (sobrescribir socios existentes con mismo RUT)</label>
-      </div>
-      {isPending && <div className="flex items-center gap-2 text-[12.5px] text-muted-foreground"><div className="w-4 h-4 border-2 border-border border-t-primary rounded-full animate-spin" />Importando…</div>}
-      <div className="flex items-center gap-3 justify-end mt-6">
-        <button onClick={onCancel} className="px-5 py-2.5 text-[13.5px] font-medium text-muted-foreground border border-border rounded-lg">Cancelar</button>
-        <button onClick={() => onSubmit()} disabled={isPending || !archivo} className="bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-[13.5px] font-semibold disabled:opacity-50">{isPending ? 'Importando…' : 'Importar'}</button>
       </div>
     </div>
   );
