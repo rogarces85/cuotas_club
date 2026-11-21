@@ -5,6 +5,7 @@ import PagosPage from '../pages/PagosPage';
 import EstadoCuentaPage from '../pages/EstadoCuentaPage';
 import BancosPage from '../pages/BancosPage';
 import ReportesPage from '../pages/ReportesPage';
+import ConfiguracionPage from '../pages/ConfiguracionPage';
 
 /**
  * Shell del sistema — sidebar negra, contenido blanco, rojo como acento.
@@ -168,6 +169,8 @@ export default function Shell({ user, activeItem, onItemClick }: Props) {
             <BancosPage />
           ) : activeItem === 'reportes' ? (
             <ReportesPage />
+          ) : activeItem === 'config' ? (
+            <ConfiguracionPage />
           ) : (
             <div className="p-6">
               <h1 className="text-[21px] font-bold tracking-tight">Panel</h1>
