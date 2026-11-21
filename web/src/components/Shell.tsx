@@ -3,6 +3,7 @@ import SociosPage from '../pages/SociosPage';
 import CuotasPage from '../pages/CuotasPage';
 import PagosPage from '../pages/PagosPage';
 import EstadoCuentaPage from '../pages/EstadoCuentaPage';
+import BancosPage from '../pages/BancosPage';
 
 /**
  * Shell del sistema — sidebar negra, contenido blanco, rojo como acento.
@@ -38,6 +39,7 @@ const groups: { label: string; items: NavItem[] }[] = [
   {
     label: 'Finanzas',
     items: [
+      { key: 'bancos', label: 'Bancos' },
       { key: 'gastos', label: 'Gastos' },
       { key: 'reportes', label: 'Reportes' },
     ],
@@ -161,6 +163,8 @@ export default function Shell({ user, activeItem, onItemClick }: Props) {
             <EstadoCuentaPage />
           ) : activeItem === 'estado' ? (
             <EstadoCuentaPage />
+          ) : activeItem === 'bancos' ? (
+            <BancosPage />
           ) : (
             <div className="p-6">
               <h1 className="text-[21px] font-bold tracking-tight">Panel</h1>

@@ -329,3 +329,111 @@ export function actualizarComprobante(id: number, estado: ComprobanteEstado): Pr
 export function urlComprobante(sha256: string): string {
   return `${BASE}/upload/comprobante/${sha256}`;
 }
+
+// ---------------------------------------------------------------------------
+// Bancos (M4)
+// ---------------------------------------------------------------------------
+
+export type CuentaBancaria = {
+  id: number;
+  banco: string;
+  tipo: string;
+  numero: string;
+  titular: string;
+  rut: string;
+  email: string | null;
+  createdAt: number;
+};
+
+export type MovimientoBancario = {
+  id: number;
+  fecha: string;
+  monto: number;
+  descripcion: string;
+  referencia: string | null;
+  createdAt: number;
+};
+
+export type ConciliacionSugerencia = {
+  movimiento: {
+    id: number;
+    fecha: string;
+    monto: number;
+    descripcion: string;
+    referencia: string | null;
+  };
+  pago: {
+    id: number;
+    rut: string;
+    nombre: string;
+    total: number;
+    fecha: string;
+  };
+  score: number;
+  razones: string[];
+};
+
+export type ConciliacionResult = {
+  sugerencias: ConciliacionSugerencia[];
+};
+
+export function listarCuentasBancarias(): Promise<CuentaBancaria[]> {
+  return request<CuentaBancaria[]>('/bancos/cuentas');
+}
+
+export function crearCuentaBancaria(input: {
+  banco: string;
+  tipo: string;
+  numero: string;
+  titular: string;
+  rut: string;
+  email?: string;
+}): Promise<CuentaBancaria> {
+  return request<CuentaBancaria>('/bancos/cuentas', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function listarMovimientosBancarios(params: {
+  pagina?: number;
+  porPagina?: number;
+}): Promise<{ total: number; pagina: number; porPagina: number; filas: MovimientoBancario[] }> {
+  const qs = new URLSearchParams();
+  if (params.pagina) qs.set('pagina', String(params.pagina));
+  if (params.porPagina) qs.set('porPagina', String(params.porPagina));
+  const query = qs.toString();
+  return request(`/bancos/movimientos${query ? `?${query}` : ''}`);
+}
+
+export async function importarCartola(archivo: File): Promise<{
+  importados: number;
+  errores: string[];
+  totalFilas: number;
+}> {
+  const formData = new FormData();
+  formData.append('archivo', archivo);
+
+  const res = await fetch(`${BASE}/bancos/importar`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let message = `Error ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) message = body.error;
+    } catch {
+      // sin cuerpo JSON
+    }
+    throw new ApiError(res.status, message);
+  }
+
+  return (await res.json()) as { importados: number; errores: string[]; totalFilas: number };
+}
+
+export function conciliarMovimientos(): Promise<ConciliacionResult> {
+  return request<ConciliacionResult>('/bancos/conciliar', { method: 'POST' });
+}

@@ -37,7 +37,7 @@ Cerrar el flujo principal de cobranza: que el socio pueda subir el comprobante d
 - [x] T3 — API: cuentas bancarias (CRUD) + importación cartola + conciliación — `api/src/bancos/routes.ts`
 - [x] T4 — API: envío de correo al aprobar/rechazar (SMTP Gmail) — `api/src/mailer.ts`, integrado en `aprobarPago`/`rechazarPago`
 - [x] T5 — Frontend: subida de comprobante en PagosPage + visor — `web/src/pages/PagosPage.tsx`, `web/src/lib/api.ts`
-- [ ] T6 — Frontend: página Bancos (cuentas, importar cartola, conciliar)
+- [x] T6 — Frontend: página Bancos (cuentas, importar cartola, conciliar) — `web/src/pages/BancosPage.tsx`, `web/src/lib/api.ts`, `Shell.tsx`, `App.tsx`
 - [ ] T7 — Prueba de aceptación E2E (subir comprobante → aprobar → correo enviado)
 
 ## Evidence
