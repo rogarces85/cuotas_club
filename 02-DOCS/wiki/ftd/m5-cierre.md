@@ -55,7 +55,7 @@ Cerrar el MVP del sistema de cuotas: módulo de gastos/egresos, reportes con exp
 - [x] T2 — API: gastos/egresos (categorías, egresos, gastos fijos, otros ingresos + boleta) — `api/src/gastos/routes.ts`, `shared/src/validators.ts`, `shared/src/schema/club.ts`
 - [x] T3 — API: reportes (balance + export XLSX/PDF) — `api/src/reportes/routes.ts`
 - [x] T4 — API: configuración (club, logo, usuarios/roles) — `api/src/config/routes.ts`, `shared/src/schema/club.ts`
-- [ ] T5 — API: importación socios + script CLI
+- [x] T5 — API: importación socios + script CLI — `api/scripts/importar-socios.mjs`, `api/src/config/routes.ts`
 - [ ] T6 — API: panel (KPIs, serie recaudación, últimos pagos)
 - [ ] T7 — Frontend: página Gastos
 - [ ] T8 — Frontend: página Reportes
