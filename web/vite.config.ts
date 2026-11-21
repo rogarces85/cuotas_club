@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      // Cubre también /api/auth/*, donde vive Better Auth.
       '/api': {
         target: 'http://localhost:8787',
         changeOrigin: true,

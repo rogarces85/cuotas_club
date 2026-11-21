@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { getDb } from './db/client.js';
 import * as authSchema from './db/auth-schema.js';
+import { env } from './env.js';
 
 /**
  * Better Auth con adaptador Drizzle + MySQL y login por email/contraseña.
@@ -16,5 +17,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  trustedOrigins: [process.env.WEB_ORIGIN ?? 'http://localhost:5173'],
+  // Sin basePath explícito better-auth usa '/api/auth', que es donde app.ts
+  // monta el handler. Si se cambia ese montaje hay que mover también este valor
+  // (o el baseURL) o todas las rutas de auth responderán 404.
+  baseURL: env.betterAuthUrl,
+  trustedOrigins: [env.webOrigin],
 });

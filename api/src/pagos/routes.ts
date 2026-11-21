@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { clubSchema } from '@cuotas-club/shared';
 import {
@@ -117,7 +117,7 @@ async function obtenerPagoPorRutYAnio(rut: string, anio: number) {
   const [fila] = await db
     .select()
     .from(pago)
-    .where(eq(pago.rut, rut) && eq(pago.anio, anio))
+    .where(and(eq(pago.rut, rut), eq(pago.anio, anio)))
     .limit(1);
   return fila ?? null;
 }

@@ -1,0 +1,1510 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "id": "c19662f9-12b1-4d30-8448-d970fd15b53d",
+  "prevId": "7bc72d59-30fe-4350-974b-6fea19a20397",
+  "tables": {
+    "categoria_egreso": {
+      "name": "categoria_egreso",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "categoria_egreso_id": {
+          "name": "categoria_egreso_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "comprobante": {
+      "name": "comprobante",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "id_pago": {
+          "name": "id_pago",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ruta": {
+          "name": "ruta",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre_archivo": {
+          "name": "nombre_archivo",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mime": {
+          "name": "mime",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bytes": {
+          "name": "bytes",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDIENTE'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "comprobante_id": {
+          "name": "comprobante_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "config_club": {
+      "name": "config_club",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "clave": {
+          "name": "clave",
+          "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor": {
+          "name": "valor",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "config_club_clave_idx": {
+          "name": "config_club_clave_idx",
+          "columns": [
+            "clave"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "config_club_id": {
+          "name": "config_club_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "cuenta_bancaria": {
+      "name": "cuenta_bancaria",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "banco": {
+          "name": "banco",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero": {
+          "name": "numero",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "titular": {
+          "name": "titular",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rut": {
+          "name": "rut",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "cuenta_bancaria_id": {
+          "name": "cuenta_bancaria_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "egreso": {
+      "name": "egreso",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "id_categoria": {
+          "name": "id_categoria",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "monto": {
+          "name": "monto",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "boleta_ruta": {
+          "name": "boleta_ruta",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "egreso_fecha_idx": {
+          "name": "egreso_fecha_idx",
+          "columns": [
+            "fecha"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "egreso_id": {
+          "name": "egreso_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "gasto_fijo": {
+      "name": "gasto_fijo",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "monto": {
+          "name": "monto",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "periodicidad": {
+          "name": "periodicidad",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "gasto_fijo_id": {
+          "name": "gasto_fijo_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "logo_club": {
+      "name": "logo_club",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "ruta": {
+          "name": "ruta",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mime": {
+          "name": "mime",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bytes": {
+          "name": "bytes",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "logo_club_id": {
+          "name": "logo_club_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "movimiento_bancario": {
+      "name": "movimiento_bancario",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "monto": {
+          "name": "monto",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "referencia": {
+          "name": "referencia",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "mov_bancario_fecha_idx": {
+          "name": "mov_bancario_fecha_idx",
+          "columns": [
+            "fecha"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "movimiento_bancario_id": {
+          "name": "movimiento_bancario_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "nivel_cuota": {
+      "name": "nivel_cuota",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "monto_clp": {
+          "name": "monto_clp",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        }
+      },
+      "indexes": {
+        "nivel_cuota_codigo_idx": {
+          "name": "nivel_cuota_codigo_idx",
+          "columns": [
+            "codigo"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "nivel_cuota_id": {
+          "name": "nivel_cuota_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "otro_ingreso": {
+      "name": "otro_ingreso",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "monto": {
+          "name": "monto",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "origen": {
+          "name": "origen",
+          "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "otro_ingreso_id": {
+          "name": "otro_ingreso_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "pago": {
+      "name": "pago",
+      "columns": {
+        "id_pago": {
+          "name": "id_pago",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "codigo_pago": {
+          "name": "codigo_pago",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "id_socio": {
+          "name": "id_socio",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rut": {
+          "name": "rut",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre_snapshot": {
+          "name": "nombre_snapshot",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "anio": {
+          "name": "anio",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sexo": {
+          "name": "sexo",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDIENTE'"
+        },
+        "situacion": {
+          "name": "situacion",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_pago": {
+          "name": "fecha_pago",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_pago": {
+          "name": "total_pago",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor_cuota": {
+          "name": "valor_cuota",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo_cuota": {
+          "name": "tipo_cuota",
+          "type": "enum('ACTIVO','MEMBRESIA','BECADO','OTRO')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "meses_cantidad": {
+          "name": "meses_cantidad",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "meses_detalle": {
+          "name": "meses_detalle",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "observacion": {
+          "name": "observacion",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "origen": {
+          "name": "origen",
+          "type": "enum('manual','banco','historico')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'manual'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "pago_socio_idx": {
+          "name": "pago_socio_idx",
+          "columns": [
+            "id_socio"
+          ],
+          "isUnique": false
+        },
+        "pago_rut_idx": {
+          "name": "pago_rut_idx",
+          "columns": [
+            "rut"
+          ],
+          "isUnique": false
+        },
+        "pago_fecha_idx": {
+          "name": "pago_fecha_idx",
+          "columns": [
+            "fecha_pago"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "pago_id_pago": {
+          "name": "pago_id_pago",
+          "columns": [
+            "id_pago"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "pago_mes": {
+      "name": "pago_mes",
+      "columns": {
+        "id_pago_mes": {
+          "name": "id_pago_mes",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "id_pago": {
+          "name": "id_pago",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id_socio": {
+          "name": "id_socio",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rut": {
+          "name": "rut",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "periodo": {
+          "name": "periodo",
+          "type": "varchar(7)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "pago_mes_pago_idx": {
+          "name": "pago_mes_pago_idx",
+          "columns": [
+            "id_pago"
+          ],
+          "isUnique": false
+        },
+        "pago_mes_socio_periodo_idx": {
+          "name": "pago_mes_socio_periodo_idx",
+          "columns": [
+            "id_socio",
+            "periodo"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "pago_mes_id_pago_mes": {
+          "name": "pago_mes_id_pago_mes",
+          "columns": [
+            "id_pago_mes"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "periodo_cuota": {
+      "name": "periodo_cuota",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "periodo": {
+          "name": "periodo",
+          "type": "varchar(7)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "dia_vencimiento": {
+          "name": "dia_vencimiento",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "periodo_cuota_periodo_idx": {
+          "name": "periodo_cuota_periodo_idx",
+          "columns": [
+            "periodo"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "periodo_cuota_id": {
+          "name": "periodo_cuota_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "socio": {
+      "name": "socio",
+      "columns": {
+        "id_socio": {
+          "name": "id_socio",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "rut": {
+          "name": "rut",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "anio": {
+          "name": "anio",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sexo": {
+          "name": "sexo",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ACTIVO'"
+        },
+        "activo": {
+          "name": "activo",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "telefono": {
+          "name": "telefono",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "socio_rut_idx": {
+          "name": "socio_rut_idx",
+          "columns": [
+            "rut"
+          ],
+          "isUnique": true
+        },
+        "socio_nombre_idx": {
+          "name": "socio_nombre_idx",
+          "columns": [
+            "nombre"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "socio_id_socio": {
+          "name": "socio_id_socio",
+          "columns": [
+            "id_socio"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "usuario_rol": {
+      "name": "usuario_rol",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rol": {
+          "name": "rol",
+          "type": "enum('DIRECTIVA','TESORERO','SOCIO')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "usuario_rol_user_idx": {
+          "name": "usuario_rol_user_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "usuario_rol_id": {
+          "name": "usuario_rol_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "account": {
+      "name": "account",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "access_token_expires_at": {
+          "name": "access_token_expires_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token_expires_at": {
+          "name": "refresh_token_expires_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP(3))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "account_userId_idx": {
+          "name": "account_userId_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "account_user_id_user_id_fk": {
+          "name": "account_user_id_user_id_fk",
+          "tableFrom": "account",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "account_id": {
+          "name": "account_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "session": {
+      "name": "session",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP(3))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "session_userId_idx": {
+          "name": "session_userId_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
+          "tableFrom": "session",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "session_id": {
+          "name": "session_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "session_token_unique": {
+          "name": "session_token_unique",
+          "columns": [
+            "token"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "user": {
+      "name": "user",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP(3))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP(3))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "user_id": {
+          "name": "user_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "verification": {
+      "name": "verification",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "identifier": {
+          "name": "identifier",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP(3))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP(3))"
+        }
+      },
+      "indexes": {
+        "verification_identifier_idx": {
+          "name": "verification_identifier_idx",
+          "columns": [
+            "identifier"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "verification_id": {
+          "name": "verification_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    }
+  },
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {},
+    "indexes": {}
+  }
+}

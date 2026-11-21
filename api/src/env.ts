@@ -42,6 +42,8 @@ export const env = {
     return process.env.BETTER_AUTH_SECRET ?? '';
   },
   get betterAuthUrl(): string {
+    // Sin path: better-auth añade su basePath por defecto ('/api/auth'),
+    // que es donde app.ts monta el handler.
     return process.env.BETTER_AUTH_URL ?? 'http://localhost:8787';
   },
 };

@@ -34,9 +34,9 @@ app.get('/api/health', async (c) => {
 });
 
 /**
- * Better Auth montado en /api/auth/*.
- * Hono y Better Auth comparten Request/Response web estándar, así que no hace
- * falta adaptador de servidor: se reenvía el request crudo al handler de auth.
+ * Better Auth montado en /api/auth/*, su basePath por defecto.
+ * El handler oficial resuelve router, cookies de sesión y comprobación de Origin.
+ * No mover esta ruta sin mover también el baseURL/basePath de better-auth.
  */
 app.all('/api/auth/*', (c) => auth.handler(c.req.raw));
 
