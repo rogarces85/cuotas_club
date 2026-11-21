@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { eq, desc } from 'drizzle-orm';
-import { db } from '../db/client.js';
+import { db, getPool } from '../db/client.js';
 import { clubSchema } from '@cuotas-club/shared';
 import {
   actualizarConfigClubSchema,
@@ -356,5 +356,151 @@ config.get('/logo/:sha256', async (c) => {
       'Content-Length': String(file.length),
       'Cache-Control': 'public, max-age=86400',
     },
+  });
+});
+
+// ==================== IMPORTACIÓN SOCIOS ====================
+
+config.post('/importar/socios', async (c) => {
+  const formData = await c.req.formData();
+  const file = formData.get('archivo');
+  const force = formData.get('force') === 'true';
+
+  if (!file || !(file instanceof File)) {
+    return c.json({ error: 'No se recibió archivo (campo "archivo")' }, 400);
+  }
+
+  const text = await file.text();
+  let registros: any[] = [];
+
+  try {
+    const { parse } = await import('csv-parse/sync');
+    registros = parse(text, {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+      delimiter: ',',
+    });
+  } catch (err) {
+    return c.json({ error: `Error parseando CSV: ${err instanceof Error ? err.message : err}` }, 400);
+  }
+
+  if (registros.length === 0) {
+    return c.json({ error: 'El archivo no contiene datos válidos' }, 400);
+  }
+
+  // Validar y normalizar (misma lógica que el script CLI)
+  function normalizarRut(rut: string): string {
+    return rut.replace(/[.-]/g, '').toUpperCase();
+  }
+
+  function validarRut(rut: string): boolean {
+    const normalizado = normalizarRut(rut);
+    if (!/^\d{7,8}[0-9K]$/.test(normalizado)) return false;
+
+    const cuerpo = normalizado.slice(0, -1);
+    const dv = normalizado.slice(-1);
+
+    let suma = 0;
+    let multiplo = 2;
+    for (let i = cuerpo.length - 1; i >= 0; i--) {
+      suma += parseInt(cuerpo[i], 10) * multiplo;
+      multiplo = multiplo === 7 ? 2 : multiplo + 1;
+    }
+    const dvCalculado = 11 - (suma % 11);
+    const dvEsperado = dvCalculado === 11 ? '0' : dvCalculado === 10 ? 'K' : String(dvCalculado);
+
+    return dv === dvEsperado;
+  }
+
+  const validos: any[] = [];
+  const errores: string[] = [];
+
+  for (let i = 0; i < registros.length; i++) {
+    const r = registros[i];
+    const fila = i + 2;
+
+    try {
+      if (!r.rut || !r.nombre || !r.anio) {
+        errores.push(`Fila ${fila}: faltan campos requeridos (rut, nombre, anio)`);
+        continue;
+      }
+
+      const rutNormalizado = normalizarRut(r.rut);
+      if (!validarRut(rutNormalizado)) {
+        errores.push(`Fila ${fila}: RUT inválido "${r.rut}"`);
+        continue;
+      }
+
+      const anio = parseInt(r.anio, 10);
+      if (isNaN(anio) || anio < 2020 || anio > 2100) {
+        errores.push(`Fila ${fila}: año inválido "${r.anio}"`);
+        continue;
+      }
+
+      const activo = r.activo === undefined || r.activo === '' ? true : (r.activo === 'true' || r.activo === '1' || r.activo === true);
+
+      validos.push({
+        rut: rutNormalizado,
+        nombre: r.nombre.trim(),
+        anio,
+        sexo: r.sexo?.trim() || null,
+        estado: r.estado?.trim() || 'ACTIVO',
+        email: r.email?.trim() || null,
+        telefono: r.telefono?.trim() || null,
+        activo: activo ? 1 : 0,
+      });
+    } catch (err) {
+      errores.push(`Fila ${fila}: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+    }
+  }
+
+  if (validos.length === 0) {
+    return c.json({ error: 'No hay registros válidos para importar', errores }, 400);
+  }
+
+  // Verificar duplicados en BD
+  const ruts = validos.map(s => s.rut);
+  const placeholders = ruts.map(() => '?').join(',');
+  const pool = getPool();
+  const [existentes] = await pool.query(
+    `SELECT rut FROM socio WHERE rut IN (${placeholders})`,
+    ruts
+  );
+
+  const rutsExistentes = new Set((existentes as any[]).map((r: any) => r.rut));
+
+  let insertados = 0;
+  let actualizados = 0;
+  let saltados = 0;
+
+  for (const s of validos) {
+    if (rutsExistentes.has(s.rut)) {
+      if (force) {
+        await pool.query(
+          `UPDATE socio SET nombre=?, anio=?, sexo=?, estado=?, email=?, telefono=?, activo=?, updatedAt=UNIX_TIMESTAMP()
+           WHERE rut=?`,
+          [s.nombre, s.anio, s.sexo, s.estado, s.email, s.telefono, s.activo, s.rut]
+        );
+        actualizados++;
+      } else {
+        saltados++;
+      }
+    } else {
+      await pool.query(
+        `INSERT INTO socio (rut, nombre, anio, sexo, estado, email, telefono, activo, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        [s.rut, s.nombre, s.anio, s.sexo, s.estado, s.email, s.telefono, s.activo]
+      );
+      insertados++;
+    }
+  }
+
+  return c.json({
+    insertados,
+    actualizados,
+    saltados,
+    errores: errores.length,
+    detalleErrores: errores.slice(0, 50),
   });
 });
