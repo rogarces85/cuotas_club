@@ -1,7 +1,7 @@
 ---
 author: Rodrigo Garces
 branch: main
-status: in-progress
+status: done
 ---
 # M3 — Pagos (CRUD + aprobación + estado de cuenta)
 
@@ -31,16 +31,24 @@ Dar a la tesorero una bandeja para revisar comprobantes subidos por socios, apro
 
 ## Checklist
 
-- [ ] T1 — FTD document (este archivo)
-- [ ] T2 — API: rutas CRUD de pagos + aprobación/rechazo + morosos
-- [ ] T3 — Frontend: página de pagos (bandeja de revisión)
-- [ ] T4 — Frontend: página de estado de cuenta por socio
-- [ ] T5 — Frontend: integrar en navegación del shell
-- [ ] T6 — Prueba de aceptación end-to-end
+- [x] T1 — FTD document (este archivo)
+- [x] T2 — API: rutas CRUD de pagos + aprobación/rechazo + morosos (commit 32fb53e)
+- [x] T3 — Frontend: página de pagos (bandeja de revisión) — `web/src/pages/PagosPage.tsx`
+- [x] T4 — Frontend: página de estado de cuenta por socio — `web/src/pages/EstadoCuentaPage.tsx`
+- [x] T5 — Frontend: integrar en navegación del shell — `Shell.tsx` + `App.tsx`
+- [x] T6 — Prueba de aceptación end-to-end — typecheck ✅, build ✅, tests ✅ (31/31), API health ✅
 
 ## Evidence
 
-(se va completando por tarea)
+- **T2**: API routes en `api/src/pagos/routes.ts` + repo en `api/src/pagos/repo.ts` (32fb53e)
+- **T3**: `web/src/pages/PagosPage.tsx` — listado con búsqueda/paginación/filtro estado, modal crear, modal detalle con Aprobar/Rechazar + motivo
+- **T4**: `web/src/pages/EstadoCuentaPage.tsx` — lista morosos con acordeón detalle períodos pendientes
+- **T5**: `web/src/components/Shell.tsx` + `web/src/App.tsx` — navegación 'Pagos', 'Morosidad', 'Estado de cuenta'
+- **T6**: `npm run typecheck` (0 errores), `npm run build` (shared+api+web), `npm test` (31 tests pasan), API `/health` OK, `/api/pagos` responde 401 sin sesión
+
+## Next
+
+M4 — Subida de comprobante (archivo), importación cartola bancaria, notificaciones correo.
 
 ## Decisiones técnicas
 
