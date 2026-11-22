@@ -14,6 +14,7 @@ import {
   type ConfigClub,
   type UsuarioRol,
 } from '../lib/api';
+import { ModalHeader } from '../components/ModalHeader';
 
 /**
  * Página Configuración (M5): datos del club, logo, usuarios/roles, importación socios.
@@ -237,17 +238,16 @@ export default function ConfiguracionPage() {
       {modal && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => { setModal(null); setArchivoLogo(null); setLogoError(null); }}>
           <div className="w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-card border border-border rounded-[12px] p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[17px] font-bold tracking-tight">
-                {modal.tipo === 'logo' ? 'Logo del club' : modal.tipo === 'usuario' ? 'Usuarios y roles' : 'Configuración'}
-              </h2>
-              <button
-                onClick={() => setModal(null)}
-                className="grid h-8 w-8 place-items-center rounded-lg border border-border text-[13px] text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25"
-              >
-                ✕
-              </button>
-            </div>
+            <ModalHeader
+              titulo={
+                modal.tipo === 'logo'
+                  ? 'Logo del club'
+                  : modal.tipo === 'usuario'
+                    ? 'Usuarios y roles'
+                    : 'Configuración'
+              }
+              onClose={() => setModal(null)}
+            />
             {modal.tipo === 'logo' && <LogoModal
               onCancel={() => { setModal(null); setArchivoLogo(null); setLogoError(null); }}
               onSubmit={async (v) => { await subirLogoMut.mutateAsync(v); }}

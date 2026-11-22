@@ -25,6 +25,7 @@ import {
   type GastoFijo,
   type OtroIngreso,
 } from '../lib/api';
+import { ModalHeader } from '../components/ModalHeader';
 
 /**
  * Página Gastos (M5): gestión de egresos, categorías, gastos fijos y otros ingresos.
@@ -277,17 +278,18 @@ export default function GastosPage() {
       {modal && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setModal(null)}>
           <div className="w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-card border border-border rounded-[12px] p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-[17px] font-bold tracking-tight">
-                {modal.tipo === 'categoria' ? 'Categoría' : modal.tipo === 'egreso' ? 'Egreso' : modal.tipo === 'fijo' ? 'Gasto fijo' : 'Ingreso'}
-              </h2>
-              <button
-                onClick={() => setModal(null)}
-                className="grid h-8 w-8 place-items-center rounded-lg border border-border text-[13px] text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25"
-              >
-                ✕
-              </button>
-            </div>
+            <ModalHeader
+              titulo={
+                modal.tipo === 'categoria'
+                  ? 'Categoría'
+                  : modal.tipo === 'egreso'
+                    ? 'Egreso'
+                    : modal.tipo === 'fijo'
+                      ? 'Gasto fijo'
+                      : 'Ingreso'
+              }
+              onClose={() => setModal(null)}
+            />
             {modal.tipo === 'categoria' && <CategoriaForm
               modo={modal.modo}
               initial={modal.data}

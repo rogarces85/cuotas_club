@@ -13,6 +13,7 @@ import {
   type NivelCuota,
   type NivelCuotaInput,
 } from '../lib/api';
+import { ModalHeader } from '../components/ModalHeader';
 
 /**
  * Página de cuotas (M2): lista de períodos, creación de período y deuda
@@ -312,17 +313,12 @@ export default function CuotasPage() {
             className="w-full max-w-[520px] max-h-[90vh] overflow-y-auto bg-card border border-border rounded-[12px] p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-[17px] font-bold tracking-tight">
-                {modalNivel.modo === 'crear' ? 'Nivel de cuota' : 'Editar nivel de cuota'}
-              </h2>
-              <button
-                onClick={() => setModalNivel(null)}
-                className="grid h-8 w-8 place-items-center rounded-lg border border-border text-[13px] text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25"
-              >
-                ✕
-              </button>
-            </div>
+            <ModalHeader
+              titulo={
+                modalNivel.modo === 'crear' ? 'Nivel de cuota' : 'Editar nivel de cuota'
+              }
+              onClose={() => setModalNivel(null)}
+            />
             <NivelForm
               initial={modalNivel.modo === 'editar' ? modalNivel.nivel : undefined}
               submitLabel={

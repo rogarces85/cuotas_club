@@ -13,6 +13,7 @@ import {
   type Pago,
   type PagoInput,
 } from '../lib/api';
+import { ModalHeader } from '../components/ModalHeader';
 
 /**
  * Página de pagos (M3): bandeja de revisión de pagos pendientes,
@@ -242,17 +243,12 @@ export default function PagosPage() {
             className="w-full max-w-[720px] max-h-[90vh] overflow-y-auto bg-card border border-border rounded-[12px] p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-[17px] font-bold tracking-tight">
-                {modal.modo === 'crear' ? 'Registrar pago' : 'Detalle de pago'}
-              </h2>
-              <button
-                onClick={() => setModal(null)}
-                className="grid h-8 w-8 place-items-center rounded-lg border border-border text-[13px] text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25"
-              >
-                ✕
-              </button>
-            </div>
+            <ModalHeader
+              titulo={
+                modal.modo === 'crear' ? 'Registrar pago' : 'Detalle de pago'
+              }
+              onClose={() => setModal(null)}
+            />
             {modal.modo === 'crear' ? (
               <PagoForm
                 serverError={crear.error instanceof ApiError ? crear.error.message : null}
@@ -739,15 +735,10 @@ function DetallePago({ pago, onAprobar, onRechazar, onClose, aprobando, rechazan
       {mostrarRechazo && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setMostrarRechazo(false)}>
           <div className="w-full max-w-[480px] max-h-[90vh] overflow-y-auto bg-card border border-border rounded-[12px] p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[15px] font-bold mb-0">Motivo del rechazo</h3>
-              <button
-                onClick={() => setMostrarRechazo(false)}
-                className="grid h-8 w-8 place-items-center rounded-lg border border-border text-[13px] text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25"
-              >
-                ✕
-              </button>
-            </div>
+            <ModalHeader
+              titulo="Motivo del rechazo"
+              onClose={() => setMostrarRechazo(false)}
+            />
             <textarea
               value={motivoRechazo}
               onChange={(e) => setMotivoRechazo(e.target.value)}

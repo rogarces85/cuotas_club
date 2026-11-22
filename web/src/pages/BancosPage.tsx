@@ -7,6 +7,7 @@ import {
   ApiError,
   type ConciliacionSugerencia,
 } from '../lib/api';
+import { ModalHeader } from '../components/ModalHeader';
 
 /**
  * Página Bancos (M4): cartola bancaria y conciliación de movimientos con
@@ -172,15 +173,11 @@ export default function BancosPage() {
       {importarModal && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setImportarModal(null)}>
           <div className="w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-card border border-border rounded-[12px] p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[17px] font-bold tracking-tight">Importar cartola bancaria (CSV)</h2>
-              <button
-                onClick={() => { setImportarModal(null); setArchivoCartola(null); setImportarError(null); }}
-                className="grid h-8 w-8 place-items-center rounded-lg border border-border text-[13px] text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25"
-              >
-                ✕
-              </button>
-            </div>
+            <ModalHeader
+              titulo="Importar cartola bancaria"
+              subtitulo="Formato esperado: fecha,monto,descripcion,referencia"
+              onClose={() => { setImportarModal(null); setArchivoCartola(null); setImportarError(null); }}
+            />
             <p className="text-[12.5px] text-muted-foreground mb-4">
               Formato esperado: <code className="font-mono bg-secondary px-1.5 py-0.5 rounded">fecha,monto,descripcion,referencia</code>
               <br />Ejemplo: <code className="font-mono bg-secondary px-1.5 py-0.5 rounded">2026-11-15,50000,TRANSFERENCIA JUAN PEREZ 12345678K,REF123</code>
@@ -231,10 +228,10 @@ export default function BancosPage() {
       {conciliarModal && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setConciliarModal(null)}>
           <div className="w-full max-w-[900px] max-h-[90vh] overflow-y-auto bg-card border border-border rounded-[12px] p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[17px] font-bold tracking-tight">Sugerencias de conciliación</h2>
-              <button onClick={() => setConciliarModal(null)} className="text-muted-foreground hover:text-foreground p-1">✕</button>
-            </div>
+            <ModalHeader
+              titulo="Sugerencias de conciliación"
+              onClose={() => setConciliarModal(null)}
+            />
             {conciliarModal.sugerencias.length === 0 ? (
               <div className="p-8 text-center text-[13px] text-muted-foreground">
                 No se encontraron coincidencias entre movimientos y pagos pendientes.

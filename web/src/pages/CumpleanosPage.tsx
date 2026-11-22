@@ -7,6 +7,7 @@ import {
   previsualizarSaludo,
   type CumpleanosFila,
 } from '../lib/api';
+import { ModalHeader } from '../components/ModalHeader';
 
 /**
  * Cumpleaños del mes.
@@ -334,31 +335,15 @@ function SaludoModal({
       >
         <div className="h-[4px] bg-gradient-to-r from-primary via-red-600 to-red-900" />
 
-        <header className="flex items-start gap-3 border-b border-border bg-secondary/40 px-6 py-4">
-          <div
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary font-mono text-[15px] font-bold text-primary-foreground shadow-sm"
-            aria-hidden="true"
-          >
-            {fila.dia}
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 id="titulo-saludo" className="text-[18px] font-bold tracking-tight">
-              Saludo para {fila.nombre}
-            </h2>
-            <p className="mt-0.5 text-[12.5px] text-muted-foreground">
-              {fila.email ? `Se enviará a ${fila.email}` : 'Este socio no tiene correo registrado'}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={enviando}
-            aria-label="Cerrar saludo"
-            className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-card text-[13px] text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25 disabled:opacity-50"
-          >
-            ✕
-          </button>
-        </header>
+            <ModalHeader
+              titulo="Saludo para {fila.nombre}"
+              subtitulo={
+                fila.email
+                  ? `Se enviará a ${fila.email}`
+                  : 'Este socio no tiene correo registrado'
+              }
+              onClose={onClose}
+            />
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
           {isPending ? (

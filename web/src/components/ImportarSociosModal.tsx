@@ -5,6 +5,7 @@ import {
   importarSocios,
   type ResultadoImportacionSocios,
 } from '../lib/api';
+import { ModalHeader } from './ModalHeader';
 
 /**
  * Importación masiva de socios.
@@ -189,31 +190,11 @@ export default function ImportarSociosModal({ abierto, onClose, onImported }: Pr
       >
         <div className="h-[4px] bg-gradient-to-r from-primary via-red-600 to-red-900" />
 
-        <header className="flex items-start gap-3 border-b border-border bg-secondary/40 px-6 py-4">
-          <div
-            aria-hidden="true"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-[11px] font-bold text-primary-foreground shadow-sm"
-          >
-            XLSX
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 id="titulo-importar-socios" className="text-[18px] font-bold tracking-tight">
-              Importar socios
-            </h2>
-            <p className="mt-0.5 text-[12.5px] text-muted-foreground">
-              Sube la planilla del club. Primero revisamos todo; tú confirmas antes de guardar.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={cerrar}
-            disabled={importando}
-            aria-label="Cerrar importación"
-            className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-card text-[13px] text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25 disabled:opacity-50"
-          >
-            ✕
-          </button>
-        </header>
+            <ModalHeader
+              titulo="Importar socios"
+              subtitulo="Sube la planilla del club. Primero revisamos todo; tú confirmas antes de guardar."
+              onClose={cerrar}
+            />
 
         <div className="max-h-[calc(92vh-73px)] space-y-5 overflow-y-auto px-6 py-5">
           {resultado ? (
