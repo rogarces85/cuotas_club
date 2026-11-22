@@ -180,6 +180,21 @@ envío responde con un aviso claro. Detalle técnico en
 
 ---
 
+## Reportes
+
+La página **Reportes** tiene dos pestañas:
+
+- **Socios y pagos**: filtros por año, trimestre o mes y por tipo de socio
+  (Activos/Inactivos, Hombres/Mujeres, Membresía/Becado). Muestra métricas del
+  padrón, distribución por sexo, estado y edad, altas por mes, recaudación y
+  monto por tipo de cuota. Incluye la descarga de pagos en **CSV** o **Excel**
+  con el estado del pago.
+- **Balance**: el reporte financiero de ingresos, egresos y saldo.
+
+Detalle técnico en [reporte-socios.md](02-DOCS/wiki/ftd/reporte-socios.md).
+
+---
+
 ## Estructura
 
 ```

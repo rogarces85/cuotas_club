@@ -7,9 +7,11 @@ import {
   ApiError,
   type BalanceResumen,
 } from '../lib/api';
+import ReporteSociosPanel from '../components/ReporteSociosPanel';
 
 /**
- * Página Reportes (M5): balance del período con exportación XLSX/PDF.
+ * Página Reportes: reporte de socios con métricas/exportación y balance
+ * financiero con exportación XLSX/PDF.
  */
 
 const formatClp = (n: number) => `$${n.toLocaleString('es-CL')}`;
@@ -33,12 +35,13 @@ function Badge({ value, color = 'secondary' }: { value: string; color?: string }
 }
 
 export default function ReportesPage() {
+  const [vista, setVista] = useState<'socios' | 'balance'>('socios');
   const [periodo, setPeriodo] = useState('');
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const { data, isPending, isError, refetch } = useQuery({
+  const { data, isFetching, isError, refetch } = useQuery({
     queryKey: ['balance', periodo, desde, hasta],
     queryFn: () => obtenerBalance({ periodo: periodo || undefined, desde: desde || undefined, hasta: hasta || undefined, formato: 'json' }),
     enabled: !!(periodo || (desde && hasta)),
@@ -106,13 +109,43 @@ export default function ReportesPage() {
         <div>
           <h1 className="text-[21px] font-bold tracking-tight">Reportes</h1>
           <p className="text-[13px] text-muted-foreground mt-[3px]">
-            Balance financiero con exportación a Excel y PDF
+            Métricas del padrón, recaudación y balance financiero
           </p>
         </div>
       </div>
 
-      {/* Formulario de parámetros */}
-      <div className="bg-card border border-border rounded-[10px] p-4 mb-5">
+      {/* Pestañas */}
+      <div className="mb-5 inline-flex rounded-xl border border-border bg-card p-1">
+        <button
+          type="button"
+          onClick={() => setVista('socios')}
+          className={`rounded-lg px-4 py-2 text-[12.5px] font-semibold transition-colors ${
+            vista === 'socios'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Socios y pagos
+        </button>
+        <button
+          type="button"
+          onClick={() => setVista('balance')}
+          className={`rounded-lg px-4 py-2 text-[12.5px] font-semibold transition-colors ${
+            vista === 'balance'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Balance
+        </button>
+      </div>
+
+      {vista === 'socios' ? (
+        <ReporteSociosPanel />
+      ) : (
+        <>
+          {/* Formulario de parámetros */}
+          <div className="bg-card border border-border rounded-[10px] p-4 mb-5">
         <h2 className="text-[14px] font-semibold mb-4">Parámetros del reporte</h2>
         <div className="flex flex-wrap gap-4 items-end">
           <div>
@@ -153,10 +186,10 @@ export default function ReportesPage() {
           </div>
           <button
             onClick={handleGenerar}
-            disabled={isPending || (!periodo && !(desde && hasta))}
+            disabled={isFetching || (!periodo && !(desde && hasta))}
             className="bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-[13.5px] font-semibold disabled:opacity-50"
           >
-            {isPending ? 'Generando…' : 'Generar reporte'}
+            {isFetching ? 'Generando…' : 'Generar reporte'}
           </button>
         </div>
         {error && (
@@ -342,7 +375,7 @@ export default function ReportesPage() {
         </div>
       )}
 
-      {!balance && !isPending && !isError && (
+      {!balance && !isFetching && !isError && (
         <div className="p-10 text-center text-[13px] text-muted-foreground">
           Seleccione un período y presione «Generar reporte» para ver el balance.
         </div>
@@ -352,6 +385,8 @@ export default function ReportesPage() {
         <div className="p-10 text-center text-[13px] text-primary">
           Error generando el reporte. Verifique los parámetros.
         </div>
+      )}
+        </>
       )}
     </div>
   );

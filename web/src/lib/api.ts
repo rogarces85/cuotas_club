@@ -812,6 +812,108 @@ export function descargarBalancePDF(params: { periodo?: string; desde?: string; 
 }
 
 // ---------------------------------------------------------------------------
+// Reporte de socios y descarga de pagos
+// ---------------------------------------------------------------------------
+
+export type ReporteSociosParams = {
+  anio?: number;
+  periodo?: 'ANIO' | 'TRIMESTRE' | 'MES';
+  trimestre?: number;
+  mes?: number;
+  socios?: string[];
+};
+
+export type ReporteSocios = {
+  generadoEn: string;
+  periodo: {
+    clave: string;
+    etiqueta: string;
+    inicio: string;
+    fin: string;
+    meses: string[];
+  };
+  filtros: {
+    anio: number;
+    periodo: 'ANIO' | 'TRIMESTRE' | 'MES';
+    trimestre: number | null;
+    mes: number | null;
+    activo: boolean | null;
+    estados: string[];
+    sexos: string[];
+    socios: string[];
+  };
+  resumen: {
+    totalSocios: number;
+    activos: number;
+    inactivos: number;
+    conEmail: number;
+    sinEmail: number;
+    conFechaNacimiento: number;
+    conFechaIngreso: number;
+    edadPromedio: number | null;
+    recaudacionPeriodo: number;
+    pagosAprobados: number;
+    sociosPagadores: number;
+    promedioPorPago: number;
+  };
+  porSexo: { clave: string; etiqueta: string; total: number }[];
+  porEstado: { clave: string; etiqueta: string; total: number }[];
+  porRangoEdad: { clave: string; etiqueta: string; total: number }[];
+  nuevosPorMes: { clave: string; etiqueta: string; total: number }[];
+  pagos: {
+    porMes: { clave: string; etiqueta: string; monto: number; cantidad: number }[];
+    porTipoCuota: { clave: string; etiqueta: string; monto: number; cantidad: number }[];
+  };
+};
+
+function paramsReporteSocios(params: ReporteSociosParams): URLSearchParams {
+  const qs = new URLSearchParams();
+  if (params.anio) qs.set('anio', String(params.anio));
+  if (params.periodo) qs.set('periodo', params.periodo);
+  if (params.trimestre) qs.set('trimestre', String(params.trimestre));
+  if (params.mes) qs.set('mes', String(params.mes));
+  for (const socio of params.socios ?? []) qs.append('socios', socio);
+  return qs;
+}
+
+export function obtenerReporteSocios(params: ReporteSociosParams): Promise<ReporteSocios> {
+  const query = paramsReporteSocios(params).toString();
+  return request<ReporteSocios>(`/reportes/socios${query ? `?${query}` : ''}`);
+}
+
+export type EstadoPagoExport = 'TODOS' | 'APROBADO' | 'PENDIENTE' | 'RECHAZADO';
+
+export async function descargarPagos(params: {
+  anio?: number;
+  socios?: string[];
+  estadoPago?: EstadoPagoExport;
+  formato: 'csv' | 'xlsx';
+}): Promise<Blob> {
+  const qs = new URLSearchParams();
+  if (params.anio) qs.set('anio', String(params.anio));
+  if (params.estadoPago) qs.set('estadoPago', params.estadoPago);
+  for (const socio of params.socios ?? []) qs.append('socios', socio);
+  qs.set('formato', params.formato);
+
+  const res = await fetch(`${BASE}/reportes/descarga/pagos?${qs.toString()}`, {
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    let message = `Error ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) message = body.error;
+    } catch {
+      // sin cuerpo JSON
+    }
+    throw new ApiError(res.status, message);
+  }
+
+  return res.blob();
+}
+
+// ---------------------------------------------------------------------------
 // Configuración (M5)
 // ---------------------------------------------------------------------------
 

@@ -24,6 +24,7 @@ El stack es el del proyecto: **Hono + TypeScript + Drizzle ORM + MariaDB**.
 | Export | `api/src/reportes/socios-export.ts` | CSV y XLSX |
 | Controller | `api/src/reportes/routes.ts` | `GET /socios` y `GET /descarga/pagos` |
 | Montaje | `api/src/app.ts` | `/api/reportes` y alias `/api/reporte` |
+| UI | `web/src/pages/ReportesPage.tsx` + `web/src/components/ReporteSociosPanel.tsx` | Pestaña «Socios y pagos»: filtros, métricas, gráficas y descargas |
 
 ## Endpoints
 
@@ -115,10 +116,23 @@ clientes que usaron la ruta del enunciado original.
 - El export usa `innerJoin` con `socio` para aplicar los filtros actuales; el
   nombre histórico del pago se conserva en `nombreSnapshot`.
 
+## Frontend
+
+La página **Reportes** tiene dos pestañas:
+
+- **Socios y pagos** (por defecto): filtros de período/año/trimestre/mes y
+  chips de socios (`Activos`, `Inactivos`, `Hombres`, `Mujeres`, `Indefinido`,
+  `Membresía`, `Becado`). Muestra tarjetas de resumen, barras de sexo, estado,
+  edad, altas por mes, recaudación por mes, monto por tipo de cuota y datos de
+  contacto. La descarga CSV/XLSX usa los mismos filtros y permite elegir el
+  estado del pago.
+- **Balance**: el formulario y los reportes financieros que ya existían.
+
+Las gráficas son CSS/SVG simples, sin agregar una librería de charts. El panel
+consume los endpoints reales y se refresca solo al cambiar los filtros.
+
 ## Fuera de alcance
 
-- Pantalla nueva en el frontend. Los endpoints quedan listos para conectarse a
-  `ReportesPage`.
 - Exportación por año de cuota (`pago.anio`); hoy el año es el de pago.
 - Paginación/streaming de más de 10.000 filas.
 - Filtro por rango de fechas arbitrario; el período es año/trimestre/mes.
@@ -130,4 +144,7 @@ clientes que usaron la ruta del enunciado original.
 - Verificación API: `node api/scripts/verify-reportes-socios.mjs` → **9/9**:
   deltas de padrón y recaudación, filtros repetidos, 400 de filtro inválido,
   CSV con BOM, XLSX con dos hojas y 401 sin sesión.
+- UI: `node web/scripts/e2e-reportes.mjs` → **11/11**: pestañas, métricas,
+  filtros combinados, limpieza, cambio de período, descarga CSV real, regreso
+  al formulario de balance y reporte sin desborde a 390 px.
 - Typecheck y build de los tres workspaces en 0.
