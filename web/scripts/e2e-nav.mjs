@@ -120,6 +120,11 @@ try {
   await send('Network.enable', {}, sessionId);
   await send('Page.enable', {}, sessionId);
   await send('Runtime.enable', {}, sessionId);
+  await send(
+    'Emulation.setDeviceMetricsOverride',
+    { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false },
+    sessionId,
+  );
 
   await send(
     'Network.setCookie',
