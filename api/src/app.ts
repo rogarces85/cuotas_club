@@ -52,6 +52,8 @@ app.route('/api/upload', upload);
 app.route('/api/bancos', bancos);
 app.route('/api/gastos', gastos);
 app.route('/api/reportes', reportes);
+// Alias singular por compatibilidad con clientes que usan /api/reporte/...
+app.route('/api/reporte', reportes);
 app.route('/api/config', config);
 app.route('/api/panel', panel);
 app.route('/api/geocoding', geocoding);

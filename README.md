@@ -235,6 +235,7 @@ Toda la documentación vive en [`02-DOCS/wiki/`](02-DOCS/wiki/index.md).
 | [M0 — base](02-DOCS/wiki/ftd/m0-base.md) | Qué se construyó y con qué evidencia |
 | [Socios — campos e importación](02-DOCS/wiki/ftd/socios-campos-importacion.md) | Fechas, sexo, direcciones y carga masiva en Excel |
 | [Cumpleaños](02-DOCS/wiki/ftd/cumpleanos.md) | Listado del mes, antigüedad y saludo por correo |
+| [Reporte de socios](02-DOCS/wiki/ftd/reporte-socios.md) | Métricas del padrón y descarga de pagos CSV/XLSX |
 
 ---
 

@@ -61,6 +61,7 @@ Punto de entrada. Lee esto antes de actuar sobre el proyecto.
 | [M3 — pagos](ftd/m3-pagos.md) | Comprobantes, aprobación y estado de cuenta |
 | [M4 — cobranza](ftd/m4-cobranza.md) | Morosidad y conciliación bancaria |
 | [M5 — cierre](ftd/m5-cierre.md) | Reportes, gastos, configuración y panel |
+| [Reporte de socios](ftd/reporte-socios.md) | Métricas del padrón y descarga de pagos CSV/XLSX |
 
 ## Identidad en una línea
 

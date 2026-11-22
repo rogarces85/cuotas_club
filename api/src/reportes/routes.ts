@@ -1,13 +1,20 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { eq, and, gte, lte, sql, desc, sum, inArray } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { clubSchema } from '@cuotas-club/shared';
-import { reporteBalanceQuerySchema, panelKpisQuerySchema } from '@cuotas-club/shared';
+import {
+  reporteBalanceQuerySchema,
+  panelKpisQuerySchema,
+  reporteSociosQuerySchema,
+  exportarPagosQuerySchema,
+} from '@cuotas-club/shared';
 import { requireSession } from '../middleware/auth.js';
 import * as XLSX from 'xlsx';
 import PDFDocument from 'pdfkit';
 import { PassThrough } from 'node:stream';
+import { ErrorReporte, obtenerReporteSocios, obtenerPagosParaExportar } from './socios-service.js';
+import { generarCsvPagos, generarXlsxPagos, nombreArchivoPagos } from './socios-export.js';
 
 const {
   pago,
@@ -28,6 +35,13 @@ const {
  *
  * GET /api/reportes/detalle-pagos — detalle de pagos en el período
  * GET /api/reportes/detalle-egresos — detalle de egresos en el período
+ *
+ * GET /api/reportes/socios — reporte demográfico + recaudación del período
+ *   Query: anio, periodo (Anio|Trimestre|Mes), trimestre, mes,
+ *          socios (Activos,Inactivos,Membresía,Becado,Hombres,Mujeres,Indefinido)
+ * GET /api/reportes/descarga/pagos — descarga de pagos filtrada por año y socios
+ *   Query: anio, socios, estadoPago (TODOS|APROBADO|PENDIENTE|RECHAZADO),
+ *          formato (csv|xlsx)
  */
 
 export const reportes = new Hono();
@@ -67,6 +81,17 @@ function formatearFecha(date: Date | string | null): string {
 
 function formatearClp(n: number): string {
   return `$${n.toLocaleString('es-CL')}`;
+}
+
+/**
+ * Recupera los filtros de socios aunque vengan repetidos en la URL
+ * (`?socios=Activos&socios=Hombres`) o separados por coma. El validador
+ * entrega una primera aproximación; `c.req.queries` conserva los repetidos.
+ */
+function leerSociosDeQuery(c: Context, validados: string[]): string[] {
+  const repetidos = c.req.queries('socios') ?? [];
+  const crudos = repetidos.length > 0 ? repetidos : validados;
+  return [...new Set(crudos.flatMap((valor) => String(valor).split(',')).map((v) => v.trim()).filter(Boolean))];
 }
 
 // ==================== BALANCE ====================
@@ -442,3 +467,68 @@ reportes.get('/detalle-egresos', zValidator('query', reporteBalanceQuerySchema),
 
   return c.json({ egresos });
 });
+
+// ==================== REPORTE DE SOCIOS ====================
+
+reportes.get('/socios', zValidator('query', reporteSociosQuerySchema), async (c) => {
+  const query = c.req.valid('query');
+  const socios = leerSociosDeQuery(c, query.socios);
+
+  try {
+    const reporte = await obtenerReporteSocios({ ...query, socios });
+    return c.json(reporte);
+  } catch (err) {
+    if (err instanceof ErrorReporte) {
+      return c.json({ error: err.message, detalles: err.detalles }, err.status as 400);
+    }
+    console.error('[reportes] Error generando reporte de socios:', err);
+    return c.json({ error: 'No se pudo generar el reporte de socios' }, 500);
+  }
+});
+
+// ==================== DESCARGA DE PAGOS ====================
+
+reportes.get(
+  '/descarga/pagos',
+  zValidator('query', exportarPagosQuerySchema),
+  async (c) => {
+    const query = c.req.valid('query');
+    const socios = leerSociosDeQuery(c, query.socios);
+    const anio = query.anio ?? new Date().getFullYear();
+
+    try {
+      const exportacion = await obtenerPagosParaExportar({
+        anio,
+        socios,
+        estadoPago: query.estadoPago,
+      });
+
+      if (query.formato === 'csv') {
+        const csv = generarCsvPagos(exportacion);
+        return new Response(csv, {
+          headers: {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': `attachment; filename="${nombreArchivoPagos(exportacion, 'csv')}"`,
+            'Cache-Control': 'no-store',
+          },
+        });
+      }
+
+      const buffer = generarXlsxPagos(exportacion);
+      return new Response(new Uint8Array(buffer), {
+        headers: {
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Content-Disposition': `attachment; filename="${nombreArchivoPagos(exportacion, 'xlsx')}"`,
+          'Content-Length': String(buffer.length),
+          'Cache-Control': 'no-store',
+        },
+      });
+    } catch (err) {
+      if (err instanceof ErrorReporte) {
+        return c.json({ error: err.message, detalles: err.detalles }, err.status as 400);
+      }
+      console.error('[reportes] Error exportando pagos:', err);
+      return c.json({ error: 'No se pudo generar el archivo de pagos' }, 500);
+    }
+  },
+);

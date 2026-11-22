@@ -451,6 +451,71 @@ export const panelKpisQuerySchema = z.object({
   mes: periodoSchema.optional(), // AAAA-MM, default mes actual
 });
 
+// ---------------------------------------------------------------------------
+// Reporte de socios y exportación de pagos
+// ---------------------------------------------------------------------------
+
+/**
+ * Período del reporte. Acepta las etiquetas que usa la UI
+ * ("Año", "Trimestre", "Mes") sin distinguir mayúsculas ni tildes.
+ */
+const periodoReporteSchema = z.preprocess(
+  (valor) => {
+    if (typeof valor !== 'string') return valor;
+    const limpio = valor
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, '_');
+    if (['ANO', 'ANIO', 'YEAR'].includes(limpio)) return 'ANIO';
+    if (['TRIMESTRE', 'QUARTER'].includes(limpio)) return 'TRIMESTRE';
+    if (['MES', 'MONTH'].includes(limpio)) return 'MES';
+    return limpio;
+  },
+  z.enum(['ANIO', 'TRIMESTRE', 'MES']).optional(),
+);
+
+/**
+ * Filtros de socios: acepta `?socios=Activos,Hombres` o el parámetro
+ * repetido `?socios=Activos&socios=Hombres`. La interpretación de cada
+ * etiqueta (Activos → activo=1, Hombres → sexo=HOMBRE) vive en el servicio.
+ */
+const sociosReporteSchema = z.preprocess(
+  (valor) => {
+    if (valor === undefined || valor === null || valor === '') return [];
+    const crudos = Array.isArray(valor) ? valor : [valor];
+    return crudos
+      .flatMap((item) => String(item).split(','))
+      .map((item) => item.trim())
+      .filter(Boolean);
+  },
+  z.array(z.string().trim().min(1).max(30)).max(10).default([]),
+);
+
+export const reporteSociosQuerySchema = z.object({
+  anio: z.coerce.number().int().min(2020).max(2100).optional(),
+  periodo: periodoReporteSchema,
+  trimestre: z.coerce.number().int().min(1).max(4).optional(),
+  mes: z.coerce.number().int().min(1).max(12).optional(),
+  socios: sociosReporteSchema,
+});
+
+const estadoPagoReporteSchema = z.preprocess(
+  (valor) => {
+    if (typeof valor !== 'string') return valor;
+    return valor.trim().toUpperCase();
+  },
+  z.enum(['TODOS', 'APROBADO', 'PENDIENTE', 'RECHAZADO']).default('TODOS'),
+);
+
+export const exportarPagosQuerySchema = z.object({
+  anio: z.coerce.number().int().min(2020).max(2100).optional(),
+  socios: sociosReporteSchema,
+  formato: z.enum(['csv', 'xlsx']).default('xlsx'),
+  estadoPago: estadoPagoReporteSchema,
+});
+
 /**
  * Cumpleaños: mes a consultar (AAAA-MM). Sin valor, el mes actual.
  */
@@ -528,6 +593,8 @@ export type ImportarSociosInput = z.infer<typeof importarSociosSchema>;
 export type ReporteBalanceQuery = z.infer<typeof reporteBalanceQuerySchema>;
 export type PanelKpisQuery = z.infer<typeof panelKpisQuerySchema>;
 export type CumpleanosQuery = z.infer<typeof cumpleanosQuerySchema>;
+export type ReporteSociosQuery = z.infer<typeof reporteSociosQuerySchema>;
+export type ExportarPagosQuery = z.infer<typeof exportarPagosQuerySchema>;
 export type ListarEgresosQuery = z.infer<typeof listarEgresosQuerySchema>;
 export type ListarOtrosIngresosQuery = z.infer<typeof listarOtrosIngresosQuerySchema>;
 export type ListarGastosFijosQuery = z.infer<typeof listarGastosFijosQuerySchema>;
