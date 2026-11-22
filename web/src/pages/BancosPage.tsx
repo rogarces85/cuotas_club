@@ -171,8 +171,16 @@ export default function BancosPage() {
       {/* Modal Importar cartola */}
       {importarModal && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setImportarModal(null)}>
-          <div className="w-full max-w-[560px] bg-card border border-border rounded-[12px] p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-[17px] font-bold tracking-tight mb-5">Importar cartola bancaria (CSV)</h2>
+          <div className="w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-card border border-border rounded-[12px] p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-[17px] font-bold tracking-tight">Importar cartola bancaria (CSV)</h2>
+              <button
+                onClick={() => { setImportarModal(null); setArchivoCartola(null); setImportarError(null); }}
+                className="grid h-8 w-8 place-items-center rounded-lg border border-border text-[13px] text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25"
+              >
+                ✕
+              </button>
+            </div>
             <p className="text-[12.5px] text-muted-foreground mb-4">
               Formato esperado: <code className="font-mono bg-secondary px-1.5 py-0.5 rounded">fecha,monto,descripcion,referencia</code>
               <br />Ejemplo: <code className="font-mono bg-secondary px-1.5 py-0.5 rounded">2026-11-15,50000,TRANSFERENCIA JUAN PEREZ 12345678K,REF123</code>

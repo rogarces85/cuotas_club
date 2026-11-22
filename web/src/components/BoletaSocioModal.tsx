@@ -76,6 +76,14 @@ export default function BoletaSocioModal({ socioId, onClose }: { socioId: number
         aria-modal="true"
         aria-label="Boleta de pagos"
       >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Cerrar boleta"
+          className="absolute top-4 right-4 z-10 grid h-8 w-8 place-items-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25 transition-colors"
+        >
+          ✕
+        </button>
         {/* Encabezado rayado */}
         <div className="h-[5px] bg-gradient-to-r from-primary via-red-600 to-red-900" />
 

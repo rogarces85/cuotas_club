@@ -314,12 +314,25 @@ export default function SociosPage() {
           <div
             ref={modalRef}
             tabIndex={-1}
-            className="w-full max-w-[820px] overflow-hidden rounded-[16px] border border-border bg-card shadow-2xl focus:outline-none"
+            className="w-full max-w-[820px] max-h-[92vh] overflow-y-auto rounded-[16px] border border-border bg-card shadow-2xl focus:outline-none"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-label={modal.modo === 'crear' ? 'Nuevo socio' : modal.modo === 'editar' ? 'Editar socio' : 'Dar de baja'}
           >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-[17px] font-bold tracking-tight">
+                {modal.modo === 'crear' ? 'Nuevo socio' : modal.modo === 'editar' ? 'Editar socio' : 'Dar de baja'}
+              </h2>
+              <button
+                type="button"
+                onClick={cerrarModal}
+                aria-label="Cerrar formulario"
+                className="grid h-8 w-8 place-items-center rounded-lg border border-border text-[13px] text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring/25"
+              >
+                ✕
+              </button>
+            </div>
             {modal.modo === 'baja' ? (
               <div>
                 <div className="h-[4px] bg-gradient-to-r from-primary via-red-600 to-red-900" />
