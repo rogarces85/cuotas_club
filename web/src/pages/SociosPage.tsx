@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   listarSocios,
   crearSocio,
   actualizarSocio,
   desactivarSocio,
-  obtenerFichaSocio,
   ApiError,
   type Socio,
 } from '../lib/api';
 import SocioForm, { type SocioFormValues } from '../components/SocioForm';
 import ImportarSociosModal from '../components/ImportarSociosModal';
+import BoletaSocioModal from '../components/BoletaSocioModal';
 
 /**
  * Página de socios (M1): tabla con búsqueda, alta, edición y baja lógica.
@@ -390,7 +390,7 @@ export default function SociosPage() {
       )}
 
       {fichaSocioId !== null && (
-        <FichaSocioModal socioId={fichaSocioId} onClose={() => setFichaSocioId(null)} />
+        <BoletaSocioModal socioId={fichaSocioId} onClose={() => setFichaSocioId(null)} />
       )}
 
       <ImportarSociosModal
@@ -398,186 +398,6 @@ export default function SociosPage() {
         onClose={() => setImportarAbierto(false)}
         onImported={invalidar}
       />
-    </div>
-  );
-}
-
-function formatClp(n: number) {
-  return `$${n.toLocaleString('es-CL')}`;
-}
-
-function Dato({
-  etiqueta,
-  children,
-}: {
-  etiqueta: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-2.5">
-      <div className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-        {etiqueta}
-      </div>
-      <div className="mt-1 text-[13px] font-medium">
-        <span className="break-words">{children}</span>
-      </div>
-    </div>
-  );
-}
-
-function FichaSocioModal({ socioId, onClose }: { socioId: number; onClose: () => void }) {
-  const { data, isPending, isError } = useQuery({
-    queryKey: ['ficha-socio', socioId],
-    queryFn: () => obtenerFichaSocio(socioId),
-  });
-
-  const socio = data?.socio;
-  const edadSocio = socio ? edad(socio.fechaNacimiento) : null;
-
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 backdrop-blur-[1px]" onClick={onClose}>
-      <div
-        className="max-h-[90vh] w-full max-w-[820px] overflow-y-auto rounded-[16px] border border-border bg-card shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Ficha del socio"
-      >
-        <div className="h-[4px] bg-gradient-to-r from-primary via-red-600 to-red-900" />
-        {isPending ? (
-          <p className="py-10 text-center text-[13px] text-muted-foreground">Cargando ficha…</p>
-        ) : isError || !data || !socio ? (
-          <p className="py-10 text-center text-[13px] text-primary">No se pudo cargar la ficha.</p>
-        ) : (
-          <div className="p-6">
-            <div className="mb-5 flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-[18px] font-bold tracking-tight">{socio.nombre}</h2>
-                <p className="mt-0.5 font-mono text-[12.5px] text-muted-foreground">
-                  {formatRut(socio.rut)} · {socio.estado} · año {socio.anio}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                {socio.activo === 1 ? (
-                  <span className="rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-semibold text-success">
-                    Activo
-                  </span>
-                ) : (
-                  <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
-                    Inactivo
-                  </span>
-                )}
-                <button
-                  onClick={onClose}
-                  aria-label="Cerrar ficha"
-                  className="grid h-8 w-8 place-items-center rounded-lg border border-border text-[13px] text-muted-foreground hover:text-foreground"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Dato etiqueta="Sexo">{socio.sexo ? SEXO_LABEL[socio.sexo] ?? socio.sexo : '—'}</Dato>
-              <Dato etiqueta="Nacimiento">
-                {fechaCorta(socio.fechaNacimiento)}
-                {edadSocio !== null && (
-                  <span className="ml-1.5 font-normal text-muted-foreground">({edadSocio} años)</span>
-                )}
-              </Dato>
-              <Dato etiqueta="Ingreso">{fechaCorta(socio.fechaIngreso)}</Dato>
-              <Dato etiqueta="Membresía">
-                <Badge value={socio.estado} />
-              </Dato>
-            </div>
-
-            <div className="mb-5 grid gap-3 sm:grid-cols-2">
-              <Dato etiqueta="Dirección">
-                {socio.direccion ? (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(socio.direccion)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-normal text-foreground underline decoration-primary/40 underline-offset-2 hover:text-primary"
-                  >
-                    {socio.direccion}
-                  </a>
-                ) : (
-                  <span className="font-normal text-muted-foreground">Sin dirección registrada</span>
-                )}
-              </Dato>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Dato etiqueta="Email">{socio.email ?? '—'}</Dato>
-                <Dato etiqueta="Teléfono">{socio.telefono ?? '—'}</Dato>
-              </div>
-            </div>
-
-            <div className="mb-5 grid gap-3 md:grid-cols-3">
-              <div className="rounded-lg bg-secondary/30 p-3">
-                <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Períodos pendientes</div>
-                <div className="font-mono text-[20px] font-bold">{data.deuda?.totalDeuda ?? 0}</div>
-              </div>
-              <div className="rounded-lg bg-secondary/30 p-3">
-                <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Pagos registrados</div>
-                <div className="font-mono text-[20px] font-bold">{data.pagos.length}</div>
-              </div>
-              <div className="rounded-lg bg-secondary/30 p-3">
-                <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Estado del padrón</div>
-                <div className="mt-1 text-[13px] font-semibold">{socio.activo === 1 ? 'Activo' : 'Inactivo'}</div>
-              </div>
-            </div>
-
-            {data.deuda && data.deuda.periodos.length > 0 && (
-              <div className="mb-5">
-                <h3 className="mb-2 text-[13.5px] font-semibold">Períodos adeudados</h3>
-                <div className="flex flex-wrap gap-2">
-                  {data.deuda.periodos.map((p) => (
-                    <span key={p.periodo} className="rounded-md bg-warning/10 px-2 py-1 font-mono text-[12px] font-semibold text-warning">
-                      {p.periodo}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div>
-              <h3 className="mb-2 text-[13.5px] font-semibold">Historial de pagos</h3>
-              {data.pagos.length === 0 ? (
-                <p className="py-3 text-[13px] text-muted-foreground">Sin pagos registrados.</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-[12.5px]">
-                    <thead>
-                      <tr className="border-b border-border text-left text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground">
-                        <th className="px-3 py-2 font-semibold">Fecha</th>
-                        <th className="px-3 py-2 font-semibold">Año</th>
-                        <th className="px-3 py-2 font-semibold">Tipo</th>
-                        <th className="px-3 py-2 font-semibold">Meses</th>
-                        <th className="px-3 py-2 font-semibold">Estado</th>
-                        <th className="px-3 py-2 text-right font-semibold">Monto</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.pagos.map((p) => (
-                        <tr key={p.id} className="border-b border-border last:border-0">
-                          <td className="px-3 py-2 font-mono">{fechaCorta(p.fechaPago)}</td>
-                          <td className="px-3 py-2">{p.anio}</td>
-                          <td className="px-3 py-2">{p.tipoCuota}</td>
-                          <td className="px-3 py-2">{p.mesesDetalle ?? p.mesesCantidad}</td>
-                          <td className="px-3 py-2">
-                            <Badge value={p.estado} />
-                          </td>
-                          <td className="px-3 py-2 text-right font-mono">{formatClp(p.totalPago)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
