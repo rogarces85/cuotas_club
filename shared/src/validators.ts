@@ -51,10 +51,33 @@ export const SEXO_SOCIO_LABELS: Record<SexoSocio, string> = {
 export const sexoSocioSchema = z.enum(SEXOS_SOCIO);
 
 /**
- * Estado del socio en el padrón. Se deja como string acotado para no
- * romper datos históricos (ACTIVO, MEMBRESIA, BECADO).
+ * Estado del socio en el padrón (para cobro/cobranza).
+ * Valores: ACTIVO | INACTIVO.
  */
-export const estadoSocioSchema = z.string().trim().min(1).max(30);
+export const estadoSocioSchema = z.enum(['ACTIVO', 'INACTIVO']);
+
+/**
+ * Tipo de cuota / plan de pago del socio.
+ * Valores: NORMAL | MEMBRESIA | BECADO | INVITADO.
+ */
+export const tipoCuotaSchema = z.enum(['NORMAL', 'MEMBRESIA', 'BECADO', 'INVITADO']);
+
+/**
+ * Monto de cuota en CLP asociado a cada tipo de cuota.
+ */
+export const MONTO_POR_TIPO_CUOTA: Record<string, number> = {
+  NORMAL: 15000,
+  MEMBRESIA: 5000,
+  BECADO: 0,
+  INVITADO: 0,
+};
+
+/**
+ * Devuelve el monto de cuota (CLP) para un tipo de cuota dado.
+ */
+export function montoCuotaPorTipo(tipoCuota: string): number {
+  return MONTO_POR_TIPO_CUOTA[tipoCuota] ?? MONTO_POR_TIPO_CUOTA.NORMAL;
+}
 
 // ---------------------------------------------------------------------------
 // Fechas (AAAA-MM-DD) y dirección
@@ -144,7 +167,7 @@ const sexoEditable = z
   .optional()
   .transform((v) => (v === '' ? null : v));
 
-export const tipoCuotaSchema = z.enum(['ACTIVO', 'MEMBRESIA', 'BECADO', 'OTRO']);
+export const tipoNivelCuotaSchema = z.enum(['ACTIVO', 'MEMBRESIA', 'BECADO', 'OTRO']);
 
 export const origenPagoSchema = z.enum(['manual', 'banco', 'historico']);
 
@@ -165,6 +188,8 @@ const socioBase = {
   fechaIngreso: fechaIngresoAlta,
   direccion: direccionAlta,
   estado: estadoSocioSchema.optional(),
+  tipoCuota: tipoCuotaSchema.optional(),
+  montoCuota: z.number().int().nonnegative().optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   telefono: z.string().trim().max(30).optional(),
 };
@@ -189,17 +214,32 @@ export const actualizarSocioSchema = z
     fechaIngreso: fechaIngresoEditable,
     direccion: direccionEditable,
     estado: estadoSocioSchema.optional(),
+    tipoCuota: tipoCuotaSchema.optional(),
+    montoCuota: z.number().int().nonnegative().optional(),
+    motivoCambioTipoCuota: z.string().trim().max(255).optional().or(z.literal('')),
     email: z.string().email('Email inválido').optional().or(z.literal('')),
     telefono: z.string().trim().max(30).optional().or(z.literal('')),
   })
-  .refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
+  .refine((v) => Object.keys(v).length > 0, 'Nada que actualizar')
+  .refine(
+    (v) => {
+      if (v.tipoCuota === 'MEMBRESIA' && !v.motivoCambioTipoCuota) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'La membresía requiere un motivo',
+      path: ['motivoCambioTipoCuota'],
+    }
+  );
 
 /**
  * Query de listado de socios: búsqueda y filtros opcionales, con paginación.
  */
 export const listarSociosQuerySchema = z.object({
   q: z.string().trim().max(160).optional(),
-  estado: z.string().trim().max(30).optional(),
+  estado: estadoSocioSchema.optional(),
   activo: z
     .enum(['0', '1'])
     .optional()
@@ -212,7 +252,7 @@ export const crearNivelCuotaSchema = z.object({
   codigo: z.string().trim().min(1).max(20),
   nombre: z.string().trim().min(1).max(80),
   montoClp: montoClpSchema,
-  tipo: tipoCuotaSchema,
+  tipo: tipoNivelCuotaSchema,
 });
 
 /**
@@ -223,7 +263,7 @@ export const actualizarNivelCuotaSchema = z
     codigo: z.string().trim().min(1).max(20).optional(),
     nombre: z.string().trim().min(1).max(80).optional(),
     montoClp: montoClpSchema.optional(),
-    tipo: tipoCuotaSchema.optional(),
+    tipo: tipoNivelCuotaSchema.optional(),
     activo: z.boolean().optional(),
   })
   .refine((v) => Object.keys(v).length > 0, 'Nada que actualizar');
@@ -239,7 +279,7 @@ export const crearPagoSchema = z.object({
   fechaPago: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida: AAAA-MM-DD'),
   totalPago: montoClpSchema,
   valorCuota: montoClpSchema,
-  tipoCuota: tipoCuotaSchema,
+  tipoCuota: tipoNivelCuotaSchema,
   mesesCantidad: z.number().int().min(1).max(12),
   mesesDetalle: z.string().max(120).optional(),
   observacion: z.string().max(255).optional(),
@@ -428,6 +468,8 @@ export const importarSociosSchema = z.object({
     fechaIngreso: fechaIngresoSchema.optional(),
     direccion: direccionSchema.optional(),
     estado: estadoSocioSchema.optional(),
+    tipoCuota: tipoCuotaSchema.optional(),
+    montoCuota: z.number().int().nonnegative().optional(),
     email: z.string().email('Email inválido').optional().or(z.literal('')),
     telefono: z.string().trim().max(30).optional(),
     activo: z.boolean().optional(),

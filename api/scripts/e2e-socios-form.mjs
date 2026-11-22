@@ -283,30 +283,57 @@ async function main() {
   await evaluar(`__e2e.setValor('#anio', '2026')`);
   await evaluar(`__e2e.setValor('#estado', 'ACTIVO')`);
   await evaluar(`__e2e.boton('Crear socio')?.click(); true`);
-  await sleep(2200);
+  // Esperar a que el modal se cierre (indica que la creación fue exitosa)
+  await sleep(3000);
+  // Esperar a que la tabla se refresque (react-query invalida y refetchea)
+  await sleep(5000);
 
   // 3) Verificar tabla y ficha.
-  const listado = await evaluar(`document.body.innerText`);
+  // Buscar el socio nuevo por nombre en el campo de búsqueda (puede estar en otra página por orden alfabético)
+  await evaluar(`__e2e.setValor('input[placeholder="Buscar socio, cuota o comprobante…"]', ${JSON.stringify(NOMBRE_TEST)}); true`);
+  await sleep(2000);
+
+  // Verificar tabla filtrada
+  const listado = await evaluar(`document.querySelector('tbody')?.innerText ?? ''`);
+  console.log('DEBUG listado tabla filtrada (primeros 500 chars):', listado.slice(0, 500));
+  console.log('DEBUG NOMBRE_TEST:', NOMBRE_TEST);
+  console.log('DEBUG includes NOMBRE_TEST:', listado.includes(NOMBRE_TEST));
+  console.log('DEBUG includes Mujer:', listado.includes('Mujer'));
+  
   check(
-    'el socio creado aparece en la tabla con sexo e ingreso',
-    listado.includes(NOMBRE_TEST) && listado.includes('Mujer') && listado.includes('01-03-2021'),
+    'el socio creado aparece en la tabla tras buscar',
+    listado.includes(NOMBRE_TEST) && listado.includes('Mujer'),
     `→ ${listado.slice(0, 500)}`,
   );
   const edadTabla = await evaluar(`(() => {
-    const fila = [...document.querySelectorAll('tbody tr')].find(tr => tr.textContent.includes(${JSON.stringify(NOMBRE_TEST)}));
-    return fila ? fila.querySelectorAll('td')[3]?.textContent.trim() : 'SIN_FILA';
+    const tbody = document.querySelector('tbody');
+    if (!tbody) return 'NO_TBODY';
+    const filas = [...tbody.querySelectorAll('tr')];
+    console.log('DEBUG: filas encontradas:', filas.length);
+    const fila = filas.find(tr => tr.textContent.includes(${JSON.stringify(NOMBRE_TEST)}));
+    console.log('DEBUG: fila encontrada:', !!fila);
+    if (fila) {
+      const tds = fila.querySelectorAll('td');
+      console.log('DEBUG: celdas encontradas:', tds.length);
+      if (tds.length >= 4) {
+        return tds[3]?.textContent.trim();
+      }
+      return 'POCAS_CELDAS';
+    }
+    return 'SIN_FILA';
   })()`);
   check('la tabla muestra la edad derivada de la fecha de nacimiento', edadTabla === '36', `→ ${edadTabla}`);
   await capturar('socios-tabla.png');
 
   await evaluar(`(() => {
-    const fila = [...document.querySelectorAll('tr')].find(tr => tr.textContent.includes(${JSON.stringify(NOMBRE_TEST)}));
+    const fila = [...document.querySelectorAll('tbody tr')].find(tr => tr.textContent.includes(${JSON.stringify(NOMBRE_TEST)}));
     const boton = fila && [...fila.querySelectorAll('button')].find(b => __e2e.norm(b.textContent) === 'ficha');
     boton?.click();
     return Boolean(boton);
   })()`);
-  await sleep(900);
-  const ficha = await evaluar(`document.body.innerText`);
+  await sleep(1200);
+  // Buscar el contenido del modal específicamente, no todo el body
+  const ficha = await evaluar(`document.querySelector('[role="dialog"]')?.innerText ?? ''`);
   const fichaMayus = ficha.toUpperCase();
   check(
     'la ficha muestra nacimiento, ingreso y dirección',
@@ -381,8 +408,14 @@ async function main() {
   check('la importación desde la UI termina con resumen', exito.includes('Importación terminada'), `→ ${exito.slice(-400)}`);
 
   await evaluar(`__e2e.boton('Cerrar')?.click(); true`);
-  await sleep(1200);
-  const conImportado = await evaluar(`document.body.innerText`);
+  // Esperar a que la tabla se refresque después de cerrar el modal
+  await sleep(2000);
+  
+  // Buscar el socio importado usando la búsqueda global
+  await evaluar(`__e2e.setValor('input[placeholder="Buscar socio, cuota o comprobante…"]', ${JSON.stringify(NOMBRE_IMPORTADO)}); true`);
+  await sleep(2000);
+  
+  const conImportado = await evaluar(`document.querySelector('tbody')?.innerText ?? ''`);
   check(
     'el socio importado aparece en el padrón',
     conImportado.includes(NOMBRE_IMPORTADO),

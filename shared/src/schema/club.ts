@@ -40,7 +40,16 @@ export const socio = mysqlTable(
     fechaNacimiento: date('fecha_nacimiento', { mode: 'string' }),
     fechaIngreso: date('fecha_ingreso', { mode: 'string' }),
     direccion: varchar('direccion', { length: 255 }),
-    estado: varchar('estado', { length: 30 }).notNull().default('ACTIVO'),
+    // Estado de padrón (para cobro/cobranza): ACTIVO | INACTIVO.
+    estado: varchar('estado', { length: 20 }).notNull().default('ACTIVO'),
+    // Tipo de cuota / plan de pago: NORMAL | MEMBRESIA | BECADO | INVITADO.
+    tipoCuota: varchar('tipo_cuota', { length: 20 }).notNull().default('NORMAL'),
+    // Monto de cuota en CLP (se deriva de tipoCuota pero se guarda para historial).
+    montoCuota: int('monto_cuota').notNull().default(15000),
+    // Fechas de cambio para trazabilidad.
+    fechaCambioEstado: date('fecha_cambio_estado', { mode: 'string' }),
+    fechaCambioTipoCuota: date('fecha_cambio_tipo_cuota', { mode: 'string' }),
+    motivoCambioTipoCuota: varchar('motivo_cambio_tipo_cuota', { length: 255 }),
     activo: tinyint('activo').notNull().default(1),
     email: varchar('email', { length: 255 }),
     telefono: varchar('telefono', { length: 30 }),
@@ -50,6 +59,8 @@ export const socio = mysqlTable(
   (t) => ({
     rutIdx: uniqueIndex('socio_rut_idx').on(t.rut),
     nombreIdx: index('socio_nombre_idx').on(t.nombre),
+    tipoCuotaIdx: index('socio_tipo_cuota_idx').on(t.tipoCuota),
+    estadoIdx: index('socio_estado_idx').on(t.estado),
   }),
 );
 
@@ -277,6 +288,8 @@ export const usuarioRol = mysqlTable(
 export const socioRelations = relations(socio, ({ many }) => ({
   pagos: many(pago),
   felicitaciones: many(felicitacionCumpleanos),
+  estadoHistorial: many(socioEstadoHistorial),
+  solicitudesBecado: many(solicitudBecado),
 }));
 
 export const pagoRelations = relations(pago, ({ one, many }) => ({
@@ -355,4 +368,53 @@ export const configClubRelations = relations(configClub, ({ many }) => ({
 
 export const logoClubRelations = relations(logoClub, ({ many }) => ({
   // sin relaciones por ahora
+}));
+
+// ---------------------------------------------------------------------------
+// Historial de cambios de estado y tipo de cuota de socios
+// ---------------------------------------------------------------------------
+
+export const socioEstadoHistorial = mysqlTable('socio_estado_historial', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+  socioId: int('id_socio', { unsigned: true }).notNull(),
+  estadoAnterior: varchar('estado_anterior', { length: 20 }),
+  estadoNuevo: varchar('estado_nuevo', { length: 20 }).notNull(),
+  tipoCuotaAnterior: varchar('tipo_cuota_anterior', { length: 20 }),
+  tipoCuotaNuevo: varchar('tipo_cuota_nuevo', { length: 20 }).notNull(),
+  motivo: varchar('motivo', { length: 255 }),
+  fecha: int('fecha').notNull(), // epoch segundos
+  usuarioId: varchar('usuario_id', { length: 64 }),
+}, (t) => ({
+  socioIdx: index('socio_estado_historial_socio_idx').on(t.socioId),
+  fechaIdx: index('socio_estado_historial_fecha_idx').on(t.fecha),
+}));
+
+// ---------------------------------------------------------------------------
+// Solicitudes de becado (socios que cumplen 60 años, pendientes de aprobación)
+// ---------------------------------------------------------------------------
+
+export const solicitudBecado = mysqlTable('solicitud_becado', {
+  id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+  socioId: int('id_socio', { unsigned: true }).notNull(),
+  fechaNacimiento: date('fecha_nacimiento', { mode: 'string' }).notNull(),
+  estado: varchar('estado', { length: 20 }).notNull().default('PENDIENTE'), // PENDIENTE | APROBADO | RECHAZADO
+  fechaSolicitud: int('fecha_solicitud').notNull(),
+  fechaResolucion: int('fecha_resolucion'),
+  usuarioId: varchar('usuario_id', { length: 64 }), // tesorero que resolvió
+}, (t) => ({
+  socioIdx: index('solicitud_becado_socio_idx').on(t.socioId),
+  estadoIdx: index('solicitud_becado_estado_idx').on(t.estado),
+  unicoPendiente: uniqueIndex('solicitud_becado_unico_pendiente').on(t.socioId, t.estado),
+}));
+
+// ---------------------------------------------------------------------------
+// Relaciones de las nuevas tablas
+// ---------------------------------------------------------------------------
+
+export const socioEstadoHistorialRelations = relations(socioEstadoHistorial, ({ one }) => ({
+  socio: one(socio, { fields: [socioEstadoHistorial.socioId], references: [socio.id] }),
+}));
+
+export const solicitudBecadoRelations = relations(solicitudBecado, ({ one }) => ({
+  socio: one(socio, { fields: [solicitudBecado.socioId], references: [socio.id] }),
 }));

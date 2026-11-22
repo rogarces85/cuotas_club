@@ -14,6 +14,10 @@ import {
   crearSocio,
   actualizarSocio,
   desactivarSocio,
+  reactivarSocio,
+  obtenerCandidatosBecado,
+  aprobarBecado,
+  rechazarBecado,
 } from './repo.js';
 import {
   ErrorImportacion,
@@ -153,5 +157,49 @@ socios.delete('/:id', async (c) => {
 
   const socio = await desactivarSocio(id);
   if (!socio) return c.json({ error: 'Socio no encontrado o ya inactivo' }, 404);
+  return c.json(socio);
+});
+
+// POST /api/socios/:id/reactivar — reactivar socio dado de baja.
+socios.post('/:id/reactivar', async (c) => {
+  const id = Number(c.req.param('id'));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({ error: 'Id de socio inválido' }, 400);
+  }
+
+  const socio = await reactivarSocio(id);
+  if (!socio) return c.json({ error: 'Socio no encontrado o ya activo' }, 404);
+  return c.json(socio);
+});
+
+// GET /api/socios/candidatos-becado — socios que cumplen 60 años y son candidatos a Becado.
+socios.get('/candidatos-becado', async (c) => {
+  const candidatos = await obtenerCandidatosBecado();
+  return c.json(candidatos);
+});
+
+// POST /api/socios/:id/becado/aprobar — aprobar paso a Becado por edad.
+socios.post('/:id/becado/aprobar', async (c) => {
+  const id = Number(c.req.param('id'));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({ error: 'Id de socio inválido' }, 400);
+  }
+
+  // TODO: obtener usuarioId del contexto de sesión (Better Auth)
+  const socio = await aprobarBecado(id, 'sistema');
+  if (!socio) return c.json({ error: 'Socio no encontrado' }, 404);
+  return c.json(socio);
+});
+
+// POST /api/socios/:id/becado/rechazar — rechazar paso a Becado.
+socios.post('/:id/becado/rechazar', async (c) => {
+  const id = Number(c.req.param('id'));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({ error: 'Id de socio inválido' }, 400);
+  }
+
+  // TODO: obtener usuarioId del contexto de sesión (Better Auth)
+  const socio = await rechazarBecado(id, 'sistema');
+  if (!socio) return c.json({ error: 'Socio no encontrado' }, 404);
   return c.json(socio);
 });

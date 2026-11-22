@@ -12,6 +12,7 @@ import ConfiguracionPage from '../pages/ConfiguracionPage';
 import PanelPage from '../pages/PanelPage';
 import CuentasBancariasPage from '../pages/CuentasBancariasPage';
 import GastosPage from '../pages/GastosPage';
+import BecadosPage from '../pages/BecadosPage';
 
 /**
  * Shell del sistema — sidebar negra, contenido blanco, rojo como acento.
@@ -43,6 +44,7 @@ const groups: { label: string; items: NavItem[] }[] = [
     items: [
       { key: 'cuotas', label: 'Cuotas', icon: 'cuotas' },
       { key: 'pagos', label: 'Pagos', icon: 'pagos', count: 0 },
+      { key: 'becados', label: 'Becados', icon: 'becados' },
       { key: 'morosidad', label: 'Morosidad', icon: 'morosidad', count: 0 },
       { key: 'estado', label: 'Estado de cuenta', icon: 'estado' },
     ],
@@ -71,11 +73,13 @@ function initials(name: string): string {
 type Props = {
   user: { name?: string | null; email: string };
   activeItem: string;
+  search: string;
+  onSearchChange: (value: string) => void;
   /** Recibe la clave del ítem ('socios', 'cuotas', …), no su etiqueta. */
   onItemClick: (key: string) => void;
 };
 
-export default function Shell({ user, activeItem, onItemClick }: Props) {
+export default function Shell({ user, activeItem, search, onSearchChange, onItemClick }: Props) {
   const [collapsed, setCollapsed] = useState(
     () => typeof window !== 'undefined' && window.innerWidth < 768,
   );
@@ -293,7 +297,8 @@ export default function Shell({ user, activeItem, onItemClick }: Props) {
             <input
               className="w-full rounded-lg border border-input bg-card py-[9px] pl-[34px] pr-[40px] text-[13px]"
               placeholder="Buscar socio, cuota o comprobante…"
-              disabled
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
             />
             <span className="absolute left-[11px] top-1/2 -translate-y-1/2 text-[13px] text-muted-foreground">
               ⌕
@@ -310,9 +315,11 @@ export default function Shell({ user, activeItem, onItemClick }: Props) {
 
         <main className="w-full max-w-[1500px] flex-1 overflow-y-auto p-4 sm:p-6">
           {activeItem === 'socios' ? (
-            <SociosPage />
+            <SociosPage search={search} />
           ) : activeItem === 'cumpleanos' ? (
             <CumpleanosPage />
+          ) : activeItem === 'becados' ? (
+            <BecadosPage />
           ) : activeItem === 'cuentas' ? (
             <CuentasBancariasPage />
           ) : activeItem === 'cuotas' ? (

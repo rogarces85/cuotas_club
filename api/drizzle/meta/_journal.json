@@ -43,6 +43,13 @@
       "when": 1795306394069,
       "tag": "0005_stormy_forge",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1795322639836,
+      "tag": "0006_careless_kitty_pryde",
+      "breakpoints": true
     }
   ]
 }

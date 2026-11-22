@@ -26,6 +26,7 @@ const MENU = [
   { label: 'Cuentas bancarias', expected: 'Cuentas bancarias' },
   { label: 'Cuotas', expected: 'Cuotas' },
   { label: 'Pagos', expected: 'Pagos' },
+  { label: 'Becados', expected: 'Solicitudes de Becado' },
   { label: 'Morosidad', expected: 'Estado de cuenta' },
   { label: 'Bancos', expected: 'Bancos' },
   { label: 'Gastos', expected: 'Gastos e Ingresos' },

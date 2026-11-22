@@ -143,6 +143,12 @@ export default function BoletaSocioModal({ socioId, onClose }: { socioId: number
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-wider font-semibold mb-1">
+                  Dirección
+                </div>
+                <div>{socio.direccion ?? '—'}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider font-semibold mb-1">
                   Sexo
                 </div>
                 <div>

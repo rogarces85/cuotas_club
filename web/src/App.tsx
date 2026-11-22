@@ -12,15 +12,16 @@ import Shell from './components/Shell';
  * La sesión vive en cookie (Better Auth) y useSession() la resuelve al cargar.
  */
 
-type View = 'panel' | 'socios' | 'cumpleanos' | 'cuentas' | 'cuotas' | 'pagos' | 'morosidad' | 'estado' | 'bancos' | 'gastos' | 'reportes' | 'config';
+type View = 'panel' | 'socios' | 'cumpleanos' | 'becados' | 'cuentas' | 'cuotas' | 'pagos' | 'morosidad' | 'estado' | 'bancos' | 'gastos' | 'reportes' | 'config';
 
 const VIEWS: readonly View[] = [
-  'panel', 'socios', 'cumpleanos', 'cuentas', 'cuotas', 'pagos', 'morosidad', 'estado', 'bancos', 'gastos', 'reportes', 'config',
+  'panel', 'socios', 'cumpleanos', 'becados', 'cuentas', 'cuotas', 'pagos', 'morosidad', 'estado', 'bancos', 'gastos', 'reportes', 'config',
 ];
 
 export default function App() {
   const { data: session, isPending } = useSession();
   const [view, setView] = useState<View>('panel');
+  const [search, setSearch] = useState('');
 
   if (isPending) {
     return (
@@ -41,8 +42,8 @@ export default function App() {
     <Shell
       user={{ name: session.user.name, email: session.user.email }}
       activeItem={view}
-      // El sidebar entrega la clave del ítem (no su etiqueta). Si no es una
-      // vista conocida, se queda en el Panel.
+      search={search}
+      onSearchChange={setSearch}
       onItemClick={(key) => {
         if ((VIEWS as readonly string[]).includes(key)) setView(key as View);
       }}

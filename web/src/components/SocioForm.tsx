@@ -7,6 +7,7 @@ import {
   type RespuestaDirecciones,
   type SugerenciaDireccion,
 } from '../lib/api';
+import { tipoCuotaSchema, montoCuotaPorTipo, estadoSocioSchema } from '@cuotas-club/shared';
 
 /**
  * Formulario de alta y edición de socios.
@@ -24,9 +25,15 @@ const SEXOS = [
 ] as const;
 
 const ESTADOS = [
-  { valor: 'ACTIVO', etiqueta: 'Activo', nota: 'Paga la cuota completa del club.' },
-  { valor: 'MEMBRESIA', etiqueta: 'Membresía', nota: 'Cuota reducida o socio colaborador.' },
-  { valor: 'BECADO', etiqueta: 'Becado', nota: 'Exento de pago por beca o convenio.' },
+  { valor: 'ACTIVO', etiqueta: 'Activo', nota: 'Habilitado para cobro de cuotas.' },
+  { valor: 'INACTIVO', etiqueta: 'Inactivo', nota: 'Dado de baja del padrón.' },
+] as const;
+
+const TIPOS_CUOTA = [
+  { valor: 'NORMAL', etiqueta: 'Normal', monto: 15000, nota: 'Plan normal: $15.000.' },
+  { valor: 'MEMBRESIA', etiqueta: 'Membresía', monto: 5000, nota: 'Plan reducido: $5.000.' },
+  { valor: 'BECADO', etiqueta: 'Becado', monto: 0, nota: 'Exento de pago: $0.' },
+  { valor: 'INVITADO', etiqueta: 'Invitado', monto: 0, nota: 'Invitado: $0, no aparece en cobro.' },
 ] as const;
 
 const dosDigitos = (n: number) => String(n).padStart(2, '0');
@@ -80,7 +87,10 @@ const schema = z.object({
     .refine((v) => v.length === 0 || v.length >= 3, 'Dirección muy corta')
     .optional()
     .or(z.literal('')),
-  estado: z.string().trim().min(1).max(30),
+  estado: estadoSocioSchema.optional().or(z.literal('')),
+  tipoCuota: tipoCuotaSchema.optional().or(z.literal('')),
+  montoCuota: z.number().int().nonnegative().optional(),
+  motivoCambioTipoCuota: z.string().trim().max(255).optional().or(z.literal('')),
   email: z.string().trim().email('Email inválido').optional().or(z.literal('')),
   telefono: z.string().trim().max(30, 'Máximo 30 caracteres').optional(),
 });
@@ -94,6 +104,9 @@ export type SocioFormValues = {
   fechaIngreso?: string;
   direccion?: string;
   estado: string;
+  tipoCuota?: string;
+  montoCuota?: number;
+  motivoCambioTipoCuota?: string;
   email?: string;
   telefono?: string;
 };
@@ -122,7 +135,7 @@ export default function SocioForm({
     watch,
     formState: { errors, isSubmitting },
   } = useForm<SocioFormValues>({
-    resolver: zodResolver(schema) as Resolver<SocioFormValues>,
+    resolver: zodResolver(schema) as unknown as Resolver<SocioFormValues>,
     mode: 'onBlur',
     defaultValues: {
       rut: initial?.rut ?? '',
@@ -133,12 +146,18 @@ export default function SocioForm({
       fechaIngreso: initial?.fechaIngreso ?? '',
       direccion: initial?.direccion ?? '',
       estado: initial?.estado ?? 'ACTIVO',
+      tipoCuota: initial?.tipoCuota ?? 'NORMAL',
+      montoCuota: initial?.montoCuota ?? montoCuotaPorTipo('NORMAL'),
+      motivoCambioTipoCuota: initial?.motivoCambioTipoCuota ?? '',
       email: initial?.email ?? '',
       telefono: initial?.telefono ?? '',
     },
   });
 
   const estadoActual = watch('estado');
+  const tipoCuotaActual = watch('tipoCuota');
+
+  const formatoClp = (n: number) => `$${n.toLocaleString('es-CL')}`;
 
   const inputClass = (invalid: boolean) =>
     `w-full rounded-lg border bg-background px-3 py-2.5 text-[13.5px] text-foreground placeholder:text-muted-foreground/70 transition-colors focus:outline-none focus:ring-2 focus:ring-ring/25 focus:border-ring ${
@@ -362,6 +381,66 @@ export default function SocioForm({
                 ))}
               </select>
             </Campo>
+            <Campo
+              id="tipoCuota"
+              etiqueta="Tipo de cuota"
+              requerido
+              error={errors.tipoCuota?.message}
+              ayuda="Define el tipo de plan de cuota que se le asigna al socio."
+            >
+              <select
+                id="tipoCuota"
+                className={inputClass(!!errors.tipoCuota)}
+                {...register('tipoCuota')}
+              >
+                {TIPOS_CUOTA.map((t) => (
+                  <option key={t.valor} value={t.valor}>
+                    {t.etiqueta} ({formatoClp(t.monto)})
+                  </option>
+                ))}
+              </select>
+            </Campo>
+            {tipoCuotaActual === 'MEMBRESIA' && (
+              <Campo
+                id="motivoCambioTipoCuota"
+                etiqueta="Motivo de membresía"
+                requerido
+                error={errors.motivoCambioTipoCuota?.message}
+                ayuda="Indica por qué este socio tiene membresía reducida."
+              >
+                <input
+                  id="motivoCambioTipoCuota"
+                  className={inputClass(!!errors.motivoCambioTipoCuota)}
+                  {...register('motivoCambioTipoCuota')}
+                />
+              </Campo>
+            )}
+            {tipoCuotaActual === 'BECADO' && (
+              <Campo
+                id="notaBecado"
+                etiqueta="Nota"
+                requerido={false}
+                error={undefined}
+                ayuda="Becado por edad (60 años). Requiere aprobación del tesorero."
+              >
+                <span className="text-[12.5px] text-warning">
+                  Este socio será exento de pago ($0) una vez el tesorero apruebe el becado.
+                </span>
+              </Campo>
+            )}
+            {tipoCuotaActual === 'INVITADO' && (
+              <Campo
+                id="notaInvitado"
+                etiqueta="Nota"
+                requerido={false}
+                error={undefined}
+                ayuda="Invitado: no paga cuota y no aparece en los estados de cobro."
+              >
+                <span className="text-[12.5px] text-warning">
+                  Este socio es invitado/influencer. No paga cuota y no aparece en el padrón de cobro.
+                </span>
+              </Campo>
+            )}
           </div>
         </Seccion>
 

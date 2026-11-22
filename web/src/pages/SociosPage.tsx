@@ -71,9 +71,8 @@ type ModalState =
   | { modo: 'baja'; socio: Socio }
   | null;
 
-export default function SociosPage() {
+export default function SociosPage({ search = '' }: { search?: string }) {
   const queryClient = useQueryClient();
-  const [busqueda, setBusqueda] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('');
   const [pagina, setPagina] = useState(1);
   const [modal, setModal] = useState<ModalState>(null);
@@ -82,7 +81,7 @@ export default function SociosPage() {
   const modalRef = useRef<HTMLDivElement>(null);
 
   const filtros = {
-    q: busqueda.trim() || undefined,
+    q: search.trim() || undefined,
     estado: estadoFiltro || undefined,
     pagina,
     porPagina: 25,
@@ -93,12 +92,17 @@ export default function SociosPage() {
     queryFn: () => listarSocios(filtros),
   });
 
-  const invalidar = () => queryClient.invalidateQueries({ queryKey: ['socios'] });
+  const invalidar = () => {
+    console.log('DEBUG: Invalidando queries de socios');
+    queryClient.invalidateQueries({ queryKey: ['socios'] });
+  };
 
   const crear = useMutation({
     mutationFn: (v: SocioFormValues) => crearSocio(v),
     onSuccess: () => {
-      invalidar();
+      console.log('DEBUG: Creación exitosa, refetcheando queries');
+      queryClient.invalidateQueries({ queryKey: ['socios'] });
+      queryClient.refetchQueries({ queryKey: ['socios'] });
       setModal(null);
     },
   });
@@ -106,7 +110,8 @@ export default function SociosPage() {
   const editar = useMutation({
     mutationFn: ({ id, v }: { id: number; v: SocioFormValues }) => actualizarSocio(id, v),
     onSuccess: () => {
-      invalidar();
+      queryClient.invalidateQueries({ queryKey: ['socios'] });
+      queryClient.refetchQueries({ queryKey: ['socios'] });
       setModal(null);
     },
   });
@@ -114,7 +119,8 @@ export default function SociosPage() {
   const darBaja = useMutation({
     mutationFn: (id: number) => desactivarSocio(id),
     onSuccess: () => {
-      invalidar();
+      queryClient.invalidateQueries({ queryKey: ['socios'] });
+      queryClient.refetchQueries({ queryKey: ['socios'] });
       setModal(null);
     },
   });
@@ -171,13 +177,13 @@ export default function SociosPage() {
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="relative min-w-[240px] max-w-[420px] flex-1">
           <input
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.target.value);
-              setPagina(1);
+            value={search}
+            onChange={() => {
+              // El cambio se maneja en el header global
             }}
             placeholder="Buscar por RUT o nombre…"
             className="w-full rounded-lg border border-input bg-card py-[9px] pl-[34px] pr-3 text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/20"
+            readOnly
           />
           <span className="absolute left-[11px] top-1/2 -translate-y-1/2 text-[13px] text-muted-foreground">⌕</span>
         </div>
@@ -218,6 +224,8 @@ export default function SociosPage() {
                   <th className="px-4 py-3 font-semibold">Ingreso</th>
                   <th className="px-4 py-3 font-semibold">Año</th>
                   <th className="px-4 py-3 font-semibold">Estado</th>
+                  <th className="px-4 py-3 font-semibold">Tipo cuota</th>
+                  <th className="px-4 py-3 text-right font-semibold">Monto</th>
                   <th className="px-4 py-3 font-semibold">Situación</th>
                   <th className="px-4 py-3 text-right font-semibold">Acciones</th>
                 </tr>
@@ -240,6 +248,10 @@ export default function SociosPage() {
                     <td className="px-4 py-3">
                       <Badge value={s.estado} />
                     </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {s.tipoCuota ? s.tipoCuota.charAt(0) + s.tipoCuota.slice(1).toLowerCase() : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right font-mono">{formatClp(s.montoCuota ?? 0)}</td>
                     <td className="whitespace-nowrap px-4 py-3">
                       {s.activo === 1 ? (
                         <span className="font-medium text-success">Activo</span>
@@ -261,12 +273,19 @@ export default function SociosPage() {
                         >
                           Editar
                         </button>
-                        {s.activo === 1 && (
+                        {s.activo === 1 ? (
                           <button
                             onClick={() => setModal({ modo: 'baja', socio: s })}
                             className="rounded-md border border-border px-2 py-1 text-[12px] font-medium text-primary/80 hover:text-primary"
                           >
                             Dar de baja
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setModal({ modo: 'editar', socio: s })}
+                            className="rounded-md border border-border px-2 py-1 text-[12px] font-medium text-success hover:text-success"
+                          >
+                            Reactivar
                           </button>
                         )}
                       </div>
@@ -400,4 +419,8 @@ export default function SociosPage() {
       />
     </div>
   );
+}
+
+function formatClp(n: number) {
+  return `$${n.toLocaleString('es-CL')}`;
 }

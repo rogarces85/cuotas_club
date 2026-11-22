@@ -61,6 +61,11 @@ export type Socio = {
   fechaIngreso: string | null;
   direccion: string | null;
   estado: string;
+  tipoCuota: string;
+  montoCuota: number;
+  fechaCambioEstado: string | null;
+  fechaCambioTipoCuota: string | null;
+  motivoCambioTipoCuota: string | null;
   activo: number;
   email: string | null;
   telefono: string | null;
@@ -77,6 +82,9 @@ export type SocioInput = {
   fechaIngreso?: string;
   direccion?: string;
   estado?: string;
+  tipoCuota?: string;
+  montoCuota?: number;
+  motivoCambioTipoCuota?: string;
   email?: string;
   telefono?: string;
 };
@@ -120,6 +128,22 @@ export function actualizarSocio(id: number, input: Partial<SocioInput>): Promise
 
 export function desactivarSocio(id: number): Promise<Socio> {
   return request<Socio>(`/socios/${id}`, { method: 'DELETE' });
+}
+
+export function reactivarSocio(id: number): Promise<Socio> {
+  return request<Socio>(`/socios/${id}/reactivar`, { method: 'POST' });
+}
+
+export async function obtenerCandidatosBecado(): Promise<Socio[]> {
+  return request<Socio[]>(`/socios/candidatos-becado`);
+}
+
+export async function aprobarBecado(socioId: number): Promise<Socio> {
+  return request<Socio>(`/socios/${socioId}/becado/aprobar`, { method: 'POST' });
+}
+
+export async function rechazarBecado(socioId: number): Promise<Socio> {
+  return request<Socio>(`/socios/${socioId}/becado/rechazar`, { method: 'POST' });
 }
 
 // ---------------------------------------------------------------------------
