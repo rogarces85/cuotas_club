@@ -15,7 +15,8 @@
     "typecheck": "npm run typecheck -w shared && npm run typecheck -w api && npm run typecheck -w web",
     "test": "npm run test -w api",
     "verify:nav": "node web/scripts/verify-nav.mjs",
-    "e2e:nav": "node web/scripts/e2e-nav.mjs"
+    "e2e:nav": "node web/scripts/e2e-nav.mjs",
+    "e2e:responsive": "node web/scripts/e2e-responsive.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

@@ -22,7 +22,9 @@ export type IconName =
   | 'config'
   | 'chevronsLeft'
   | 'chevronsRight'
-  | 'logout';
+  | 'logout'
+  | 'menu'
+  | 'x';
 
 const paths: Record<IconName, ReactNode> = {
   panel: (
@@ -140,6 +142,19 @@ const paths: Record<IconName, ReactNode> = {
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
       <polyline points="16 17 21 12 16 7" />
       <line x1="21" y1="12" x2="9" y2="12" />
+    </>
+  ),
+  menu: (
+    <>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="18" x2="20" y2="18" />
+    </>
+  ),
+  x: (
+    <>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
     </>
   ),
 };
