@@ -452,6 +452,13 @@ export const panelKpisQuerySchema = z.object({
 });
 
 /**
+ * Cumpleaños: mes a consultar (AAAA-MM). Sin valor, el mes actual.
+ */
+export const cumpleanosQuerySchema = z.object({
+  mes: periodoSchema.optional(),
+});
+
+/**
  * Subida de logo del club.
  */
 export const subirLogoSchema = z.object({
@@ -520,6 +527,7 @@ export type ActualizarUsuarioRolInput = z.infer<typeof actualizarUsuarioRolSchem
 export type ImportarSociosInput = z.infer<typeof importarSociosSchema>;
 export type ReporteBalanceQuery = z.infer<typeof reporteBalanceQuerySchema>;
 export type PanelKpisQuery = z.infer<typeof panelKpisQuerySchema>;
+export type CumpleanosQuery = z.infer<typeof cumpleanosQuerySchema>;
 export type ListarEgresosQuery = z.infer<typeof listarEgresosQuerySchema>;
 export type ListarOtrosIngresosQuery = z.infer<typeof listarOtrosIngresosQuerySchema>;
 export type ListarGastosFijosQuery = z.infer<typeof listarGastosFijosQuerySchema>;

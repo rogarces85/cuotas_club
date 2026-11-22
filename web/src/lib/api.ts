@@ -981,3 +981,77 @@ export type FichaSocio = {
 export function obtenerFichaSocio(id: number): Promise<FichaSocio> {
   return request<FichaSocio>(`/socios/${id}/ficha`);
 }
+
+// ---------------------------------------------------------------------------
+// Cumpleaños
+// ---------------------------------------------------------------------------
+
+export type MembresiaSocio = {
+  anios: number;
+  meses: number;
+  texto: string;
+};
+
+export type FelicitacionCumple = {
+  enviadoAt: number;
+  anio: number;
+};
+
+export type CumpleanosFila = {
+  socioId: number;
+  rut: string;
+  nombre: string;
+  email: string | null;
+  fechaNacimiento: string;
+  dia: number;
+  edadCumple: number | null;
+  fechaIngreso: string | null;
+  membresia: MembresiaSocio | null;
+  esHoy: boolean;
+  felicitacion: FelicitacionCumple | null;
+  puedeEnviar: boolean;
+};
+
+export type CumpleanosLista = {
+  mes: string;
+  etiqueta: string;
+  total: number;
+  conEmail: number;
+  enviados: number;
+  correoConfigurado: boolean;
+  club: {
+    nombre: string;
+    email: string | null;
+    telefono: string | null;
+    direccion: string | null;
+  };
+  filas: CumpleanosFila[];
+};
+
+export type SaludoPreview = {
+  asunto: string;
+  texto: string;
+  html: string;
+  para: string;
+  nombre: string;
+};
+
+export function listarCumpleanos(mes?: string): Promise<CumpleanosLista> {
+  const qs = new URLSearchParams();
+  if (mes) qs.set('mes', mes);
+  const query = qs.toString();
+  return request<CumpleanosLista>(`/cumpleanos${query ? `?${query}` : ''}`);
+}
+
+export function previsualizarSaludo(socioId: number): Promise<SaludoPreview> {
+  return request<SaludoPreview>(`/cumpleanos/${socioId}/preview`);
+}
+
+export function enviarSaludo(
+  socioId: number,
+): Promise<{ ok: true; enviadoAt: number; para: string }> {
+  return request<{ ok: true; enviadoAt: number; para: string }>(
+    `/cumpleanos/${socioId}/enviar`,
+    { method: 'POST' },
+  );
+}

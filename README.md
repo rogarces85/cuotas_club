@@ -158,6 +158,28 @@ nunca pisa datos existentes con celdas vacías.
 
 ---
 
+## Cumpleaños
+
+La sección **Cumpleaños** lista a los socios activos que cumplen años en el mes
+en curso. Por cada uno muestra el día, la edad que cumple y la antigüedad en el
+club (`X años y Y meses`, calculada desde la fecha de ingreso).
+
+El botón **Saludar** abre una vista previa del correo y permite enviarlo. El
+mensaje usa la identidad del club y los datos de contacto configurados en
+**Configuración**. Cada socio recibe como máximo un saludo por año.
+
+Para habilitar el envío real con Gmail:
+
+1. Activa la verificación en dos pasos en la cuenta de tesorería.
+2. Genera una **contraseña de aplicación** de Google.
+3. Pégala en `api/.env` como `MAIL_PASSWORD` y reinicia la API.
+
+Sin esa clave, la vista previa y el botón **Copiar texto** funcionan igual; el
+envío responde con un aviso claro. Detalle técnico en
+[cumpleanos.md](02-DOCS/wiki/ftd/cumpleanos.md).
+
+---
+
 ## Estructura
 
 ```
@@ -212,6 +234,7 @@ Toda la documentación vive en [`02-DOCS/wiki/`](02-DOCS/wiki/index.md).
 | [Marca y paleta](02-DOCS/wiki/product/marca-y-paleta.md) | Colores medidos del logo, tokens CSS |
 | [M0 — base](02-DOCS/wiki/ftd/m0-base.md) | Qué se construyó y con qué evidencia |
 | [Socios — campos e importación](02-DOCS/wiki/ftd/socios-campos-importacion.md) | Fechas, sexo, direcciones y carga masiva en Excel |
+| [Cumpleaños](02-DOCS/wiki/ftd/cumpleanos.md) | Listado del mes, antigüedad y saludo por correo |
 
 ---
 

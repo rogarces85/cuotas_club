@@ -11,6 +11,7 @@ import { reportes } from './reportes/routes.js';
 import { config } from './config/routes.js';
 import { panel } from './panel/routes.js';
 import { geocoding } from './geocoding/routes.js';
+import { cumpleanos } from './cumpleanos/routes.js';
 
 const app = new Hono();
 
@@ -54,5 +55,6 @@ app.route('/api/reportes', reportes);
 app.route('/api/config', config);
 app.route('/api/panel', panel);
 app.route('/api/geocoding', geocoding);
+app.route('/api/cumpleanos', cumpleanos);
 
 export default app;

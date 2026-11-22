@@ -22,6 +22,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const MENU = [
   { label: 'Panel', expected: 'Panel' },
   { label: 'Socios', expected: 'Socios' },
+  { label: 'Cumpleaños', expected: 'Cumpleaños' },
   { label: 'Cuentas bancarias', expected: 'Cuentas bancarias' },
   { label: 'Cuotas', expected: 'Cuotas' },
   { label: 'Pagos', expected: 'Pagos' },

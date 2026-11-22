@@ -215,6 +215,26 @@ export const otroIngreso = mysqlTable('otro_ingreso', {
 });
 
 // ---------------------------------------------------------------------------
+// Felicitaciones de cumpleaños (una por socio y año)
+// ---------------------------------------------------------------------------
+
+export const felicitacionCumpleanos = mysqlTable(
+  'felicitacion_cumpleanos',
+  {
+    id: int('id', { unsigned: true }).autoincrement().primaryKey(),
+    socioId: int('id_socio', { unsigned: true }).notNull(),
+    anio: smallint('anio').notNull(),
+    email: varchar('email', { length: 255 }).notNull(),
+    enviadoAt: int('enviado_at').notNull(),
+  },
+  (t) => ({
+    // Un solo saludo por socio y año: evita duplicados por doble clic.
+    unico: uniqueIndex('felicitacion_socio_anio_idx').on(t.socioId, t.anio),
+    socioIdx: index('felicitacion_socio_idx').on(t.socioId),
+  }),
+);
+
+// ---------------------------------------------------------------------------
 // Movimientos bancarios (cartola importada)
 // ---------------------------------------------------------------------------
 
@@ -256,6 +276,7 @@ export const usuarioRol = mysqlTable(
 
 export const socioRelations = relations(socio, ({ many }) => ({
   pagos: many(pago),
+  felicitaciones: many(felicitacionCumpleanos),
 }));
 
 export const pagoRelations = relations(pago, ({ one, many }) => ({
@@ -297,6 +318,10 @@ export const movimientoBancarioRelations = relations(movimientoBancario, ({ many
 
 export const usuarioRolRelations = relations(usuarioRol, ({ many }) => ({
   // sin relaciones por ahora
+}));
+
+export const felicitacionCumpleanosRelations = relations(felicitacionCumpleanos, ({ one }) => ({
+  socio: one(socio, { fields: [felicitacionCumpleanos.socioId], references: [socio.id] }),
 }));
 
 // ---------------------------------------------------------------------------

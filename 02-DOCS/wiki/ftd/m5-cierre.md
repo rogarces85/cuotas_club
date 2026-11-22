@@ -104,7 +104,7 @@ que cubre el mismo resultado).
 - Archivos (boletas, logo): misma infraestructura que comprobantes → `api/uploads/boletas/<sha256>`, `api/uploads/logo/...`
 - Export Excel: `xlsx` (SheetJS); Export PDF: `pdfkit` o similar ligero
 - Roles: DIRECTIVA (todo), TESORERO (pagos, bancos, reportes, gastos), SOCIO (solo ver su estado de cuenta)
-- Importación socios: CSV con columnas `rut,nombre,anio,sexo,estado,email,telefono,activo`
+- Importación socios: plantilla Excel (`rut,nombre,anio,sexo,fecha_nacimiento,fecha_ingreso,direccion,email,telefono,estado,activo`), también acepta CSV
 - Panel: datos derivados en vivo (sin tablas de agregados), caché corto (30s) para KPIs
 
 ## Next

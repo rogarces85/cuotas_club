@@ -57,6 +57,7 @@ Punto de entrada. Lee esto antes de actuar sobre el proyecto.
 | [M0 — base](ftd/m0-base.md) | Workspaces, base de datos, autenticación y tema |
 | [M1 — socios](ftd/m1-socios.md) | CRUD, búsqueda y baja lógica |
 | [Socios — campos e importación](ftd/socios-campos-importacion.md) | Fechas, sexo cerrado, direcciones y carga masiva en Excel |
+| [Cumpleaños](ftd/cumpleanos.md) | Listado del mes, antigüedad y saludo por correo |
 | [M3 — pagos](ftd/m3-pagos.md) | Comprobantes, aprobación y estado de cuenta |
 | [M4 — cobranza](ftd/m4-cobranza.md) | Morosidad y conciliación bancaria |
 | [M5 — cierre](ftd/m5-cierre.md) | Reportes, gastos, configuración y panel |

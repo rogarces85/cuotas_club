@@ -12,6 +12,16 @@ import type { Transport } from 'nodemailer';
 
 let transporter: Transporter | null = null;
 
+/** Verdadero si las variables mínimas de correo están completas. */
+export function correoConfigurado(): boolean {
+  return Boolean(
+    process.env.MAIL_HOST &&
+      process.env.MAIL_USER &&
+      process.env.MAIL_PASSWORD &&
+      process.env.MAIL_FROM,
+  );
+}
+
 function getTransporter(): Transporter {
   if (transporter) return transporter;
 

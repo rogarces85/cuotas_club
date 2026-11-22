@@ -12,10 +12,10 @@ import Shell from './components/Shell';
  * La sesión vive en cookie (Better Auth) y useSession() la resuelve al cargar.
  */
 
-type View = 'panel' | 'socios' | 'cuentas' | 'cuotas' | 'pagos' | 'morosidad' | 'estado' | 'bancos' | 'gastos' | 'reportes' | 'config';
+type View = 'panel' | 'socios' | 'cumpleanos' | 'cuentas' | 'cuotas' | 'pagos' | 'morosidad' | 'estado' | 'bancos' | 'gastos' | 'reportes' | 'config';
 
 const VIEWS: readonly View[] = [
-  'panel', 'socios', 'cuentas', 'cuotas', 'pagos', 'morosidad', 'estado', 'bancos', 'gastos', 'reportes', 'config',
+  'panel', 'socios', 'cumpleanos', 'cuentas', 'cuotas', 'pagos', 'morosidad', 'estado', 'bancos', 'gastos', 'reportes', 'config',
 ];
 
 export default function App() {

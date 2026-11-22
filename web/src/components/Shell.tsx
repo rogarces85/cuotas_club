@@ -1,5 +1,6 @@
 import { signOut } from '../lib/auth-client';
 import SociosPage from '../pages/SociosPage';
+import CumpleanosPage from '../pages/CumpleanosPage';
 import CuotasPage from '../pages/CuotasPage';
 import PagosPage from '../pages/PagosPage';
 import EstadoCuentaPage from '../pages/EstadoCuentaPage';
@@ -29,6 +30,7 @@ const groups: { label: string; items: NavItem[] }[] = [
     items: [
       { key: 'panel', label: 'Panel' },
       { key: 'socios', label: 'Socios' },
+      { key: 'cumpleanos', label: 'Cumpleaños' },
       { key: 'cuentas', label: 'Cuentas bancarias' },
     ],
   },
@@ -158,6 +160,8 @@ export default function Shell({ user, activeItem, onItemClick }: Props) {
         <main className="flex-1 p-6 max-w-[1500px] w-full overflow-y-auto">
           {activeItem === 'socios' ? (
             <SociosPage />
+          ) : activeItem === 'cumpleanos' ? (
+            <CumpleanosPage />
           ) : activeItem === 'cuentas' ? (
             <CuentasBancariasPage />
           ) : activeItem === 'cuotas' ? (
